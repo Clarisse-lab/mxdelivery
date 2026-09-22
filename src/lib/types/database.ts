@@ -28,15 +28,7 @@ export interface Pedido {
   bairro: string | null;
   referencia: string | null;
 
-  forma_pagamento: FormaPagamento;
   valor_total: number;
-  troco_para: number | null;
-
-  cartao_tipo: CartaoTipo | null;
-  parcelas: number | null;
-
-  pix_pago: boolean | null;
-  comprovante_pix_path: string | null;
 
   precisa_receita: boolean;
 
@@ -51,6 +43,7 @@ export interface Pedido {
   motivo_problema: string | null;
 
   observacoes: string | null;
+  observacao_motoboy: string | null;
 
   criado_em: string;
   atribuido_em: string | null;
@@ -75,3 +68,24 @@ export interface Receita {
 }
 
 export type NovaReceita = { tipo_receita: TipoReceita; quantidade: number };
+
+export interface Pagamento {
+  id: string;
+  pedido_id: string;
+  forma_pagamento: FormaPagamento;
+  valor: number;
+  cartao_tipo: CartaoTipo | null;
+  parcelas: number | null;
+  troco_para: number | null;
+  pix_pago: boolean | null;
+  comprovante_pix_path: string | null;
+}
+
+export type NovoPagamento = {
+  forma_pagamento: FormaPagamento;
+  valor: number;
+  cartao_tipo: CartaoTipo | null;
+  parcelas: number | null;
+  troco_para: number | null;
+  pix_pago: boolean | null;
+};

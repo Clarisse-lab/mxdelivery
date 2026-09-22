@@ -9,6 +9,7 @@ export async function finalizarEntrega(
     receitaColetada: boolean;
     trocoEntregue: boolean;
     pagamentoConfirmado: boolean;
+    observacao: string;
   },
 ) {
   const supabase = await createClient();
@@ -17,6 +18,7 @@ export async function finalizarEntrega(
     p_receita_coletada: checklist.receitaColetada,
     p_troco_entregue: checklist.trocoEntregue,
     p_pagamento_confirmado: checklist.pagamentoConfirmado,
+    p_observacao: checklist.observacao || null,
   });
 
   if (error) throw new Error(error.message);

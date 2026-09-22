@@ -1,4 +1,4 @@
-import type { StatusPedido, FormaPagamento, TipoReceita, Pedido } from "@/lib/types/database";
+import type { StatusPedido, FormaPagamento, TipoReceita, Pagamento } from "@/lib/types/database";
 
 export const STATUS_LABEL: Record<StatusPedido, string> = {
   pendente: "Pendente",
@@ -29,17 +29,26 @@ export const TIPO_RECEITA_LABEL: Record<TipoReceita, string> = {
   antimicrobiano: "Antimicrobiano",
 };
 
-export function descreverFormaPagamento(
-  p: Pick<Pedido, "forma_pagamento" | "cartao_tipo" | "parcelas" | "pix_pago">,
-): string {
+export function descreverPagamento(p: Pagamento | NovoPagamentoDescricao): string {
   if (p.forma_pagamento === "cartao") {
     const tipo = p.cartao_tipo === "debito" ? "Débito" : "Crédito";
-    return p.parcelas ? `Cartão · ${tipo} · ${p.parcelas}x` : `Cartão · ${tipo}`;
+    const base = `Cartão · ${tipo}`;
+    return p.parcelas ? `${base} · ${p.parcelas}x` : base;
   }
   if (p.forma_pagamento === "pix") {
     return p.pix_pago ? "Pix · Pago" : "Pix · Pendente";
   }
   return "Dinheiro";
+}
+
+type NovoPagamentoDescricao = Pick<Pagamento, "forma_pagamento" | "cartao_tipo" | "parcelas" | "pix_pago">;
+
+export function descreverPagamentos(pagamentos: Pagamento[]): string {
+  if (pagamentos.length === 0) return "—";
+  if (pagamentos.length === 1) return descreverPagamento(pagamentos[0]);
+  return pagamentos
+    .map((p) => `${descreverPagamento(p)} (${formatarMoeda(p.valor)})`)
+    .join(" + ");
 }
 
 export function formatarMoeda(valor: number): string {

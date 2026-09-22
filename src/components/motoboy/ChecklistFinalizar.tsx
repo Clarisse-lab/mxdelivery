@@ -7,10 +7,16 @@ import {
   marcarProblema,
 } from "@/app/motoboy/entregas/[id]/finalizar/actions";
 import { calcularTroco } from "@/lib/utils/troco";
-import { formatarMoeda } from "@/lib/utils/status";
-import type { Pedido } from "@/lib/types/database";
+import { descreverPagamento, formatarMoeda } from "@/lib/utils/status";
+import type { Pedido, Pagamento } from "@/lib/types/database";
 
-export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
+export default function ChecklistFinalizar({
+  pedido,
+  pagamentos,
+}: {
+  pedido: Pedido;
+  pagamentos: Pagamento[];
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
@@ -18,16 +24,24 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
   const [receitaColetada, setReceitaColetada] = useState(false);
   const [trocoEntregue, setTrocoEntregue] = useState(false);
   const [pagamentoConfirmado, setPagamentoConfirmado] = useState(false);
+  const [observacao, setObservacao] = useState("");
 
   const [mostrarProblema, setMostrarProblema] = useState(false);
   const [motivo, setMotivo] = useState("");
 
   const precisaReceita = pedido.precisa_receita;
-  const precisaTroco = pedido.troco_para !== null;
-  const pixJaPago = pedido.forma_pagamento === "pix" && pedido.pix_pago === true;
-  const troco = calcularTroco(pedido.valor_total, pedido.troco_para);
 
-  const pagamentoOk = pixJaPago || pagamentoConfirmado;
+  const pendentesDeCobranca = pagamentos.filter(
+    (pg) => pg.forma_pagamento !== "pix" || pg.pix_pago !== true,
+  );
+  const tudoJaPago = pagamentos.length > 0 && pendentesDeCobranca.length === 0;
+
+  const linhasComTroco = pagamentos.filter(
+    (pg) => pg.forma_pagamento === "dinheiro" && pg.troco_para !== null,
+  );
+  const precisaTroco = linhasComTroco.length > 0;
+
+  const pagamentoOk = tudoJaPago || pagamentoConfirmado;
 
   const podeFinalizar =
     (!precisaReceita || receitaColetada) && (!precisaTroco || trocoEntregue) && pagamentoOk;
@@ -40,6 +54,7 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
           receitaColetada,
           trocoEntregue,
           pagamentoConfirmado: pagamentoOk,
+          observacao: observacao.trim(),
         });
         router.push("/motoboy/entregas");
       } catch (e) {
@@ -75,6 +90,7 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
           value={motivo}
           onChange={(e) => setMotivo(e.target.value)}
           rows={3}
+          placeholder="Ex.: cliente não estava em casa, não conseguiu pagar, não tinha a receita..."
           className="w-full rounded-lg border border-red-300 px-3 py-2 text-base outline-none focus:border-red-500"
         />
         {erro && <p className="text-sm text-red-700">{erro}</p>}
@@ -108,27 +124,55 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
             onChange={setReceitaColetada}
           />
         )}
+
         {precisaTroco && (
           <ChecklistCheckbox
-            label={`Entreguei o troco${troco !== null ? ` (${formatarMoeda(troco)})` : ""}`}
+            label={`Entreguei o troco${
+              linhasComTroco.length > 0
+                ? ` (${linhasComTroco
+                    .map((pg) => formatarMoeda(calcularTroco(pg.valor, pg.troco_para) ?? 0))
+                    .join(" + ")})`
+                : ""
+            }`}
             checked={trocoEntregue}
             onChange={setTrocoEntregue}
           />
         )}
-        {pixJaPago ? (
+
+        {tudoJaPago ? (
           <p className="flex items-center gap-2 py-1 text-base text-emerald-700">
             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
               ✓
             </span>
-            Pagamento via Pix já confirmado
+            Pagamento já confirmado
           </p>
         ) : (
           <ChecklistCheckbox
-            label="Recebi o pagamento"
+            label={
+              pendentesDeCobranca.length > 0
+                ? `Recebi o pagamento (${pendentesDeCobranca
+                    .map((pg) => `${descreverPagamento(pg)} · ${formatarMoeda(pg.valor)}`)
+                    .join(" + ")})`
+                : "Recebi o pagamento"
+            }
             checked={pagamentoConfirmado}
             onChange={setPagamentoConfirmado}
           />
         )}
+      </div>
+
+      <div className="space-y-1 rounded-xl border border-slate-200 bg-white p-4">
+        <label htmlFor="observacao" className="text-sm font-medium text-slate-700">
+          Observação da entrega (opcional)
+        </label>
+        <textarea
+          id="observacao"
+          value={observacao}
+          onChange={(e) => setObservacao(e.target.value)}
+          rows={2}
+          placeholder="Alguma nota sobre essa entrega?"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+        />
       </div>
 
       {erro && <p className="text-sm text-red-600">{erro}</p>}
@@ -167,7 +211,7 @@ function ChecklistCheckbox({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-6 w-6 accent-emerald-600"
+        className="h-6 w-6 shrink-0 accent-emerald-600"
       />
       {label}
     </label>

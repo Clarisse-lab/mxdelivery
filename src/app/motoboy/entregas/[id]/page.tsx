@@ -7,11 +7,11 @@ import {
   STATUS_LABEL,
   STATUS_BADGE_CLASS,
   TIPO_RECEITA_LABEL,
-  descreverFormaPagamento,
+  descreverPagamento,
   formatarMoeda,
 } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
-import type { Pedido, Receita } from "@/lib/types/database";
+import type { Pedido, Receita, Pagamento } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -25,17 +25,18 @@ export default async function EntregaDetalhePage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: pedido }, { data: receitas }] = await Promise.all([
+  const [{ data: pedido }, { data: receitas }, { data: pagamentos }] = await Promise.all([
     supabase.from("pedidos").select("*").eq("id", id).single(),
     supabase.from("receitas").select("*").eq("pedido_id", id),
+    supabase.from("pagamentos").select("*").eq("pedido_id", id),
   ]);
   if (!pedido) notFound();
 
   const p = pedido as Pedido;
   const listaReceitas = (receitas as Receita[]) ?? [];
+  const listaPagamentos = (pagamentos as Pagamento[]) ?? [];
   const ehMinha = p.motoboy_id === user.id;
   const naFila = p.motoboy_id === null && p.status === "pendente";
-  const troco = calcularTroco(p.valor_total, p.troco_para);
 
   return (
     <div className="space-y-4 pb-24">
@@ -84,21 +85,36 @@ export default async function EntregaDetalhePage({
           </div>
         )}
         <div>
-          <p className="text-xs font-medium text-slate-500">Forma de pagamento</p>
-          <p className="text-base text-slate-900">{descreverFormaPagamento(p)}</p>
-        </div>
-        <div>
           <p className="text-xs font-medium text-slate-500">Valor total</p>
           <p className="text-base text-slate-900">{formatarMoeda(p.valor_total)}</p>
         </div>
-        {troco !== null && (
-          <div className="rounded-lg bg-amber-100 p-3">
-            <p className="text-xs font-medium text-amber-800">
-              Cliente paga com {formatarMoeda(p.troco_para!)}
-            </p>
-            <p className="text-lg font-bold text-amber-900">Levar troco: {formatarMoeda(troco)}</p>
-          </div>
-        )}
+
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-slate-500">Pagamento</p>
+          {listaPagamentos.map((pg) => {
+            const troco = calcularTroco(pg.valor, pg.troco_para);
+            const cobrar = pg.forma_pagamento !== "pix" || pg.pix_pago !== true;
+            return (
+              <div
+                key={pg.id}
+                className={`rounded-lg p-3 ${cobrar ? "bg-amber-100" : "bg-emerald-50"}`}
+              >
+                <p className={`text-base font-bold ${cobrar ? "text-amber-900" : "text-emerald-800"}`}>
+                  {descreverPagamento(pg)}
+                  {listaPagamentos.length > 1 && ` · ${formatarMoeda(pg.valor)}`}
+                </p>
+                {!cobrar && <p className="text-xs text-emerald-700">Já pago — nada a cobrar</p>}
+                {troco !== null && (
+                  <p className="text-sm font-semibold text-amber-900">
+                    Cliente paga com {formatarMoeda(pg.troco_para!)} · Levar troco:{" "}
+                    {formatarMoeda(troco)}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         {p.observacoes && (
           <div>
             <p className="text-xs font-medium text-slate-500">Observações</p>
@@ -125,6 +141,12 @@ export default async function EntregaDetalhePage({
       {p.status === "problema" && p.motivo_problema && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           <strong>Problema reportado:</strong> {p.motivo_problema}
+        </div>
+      )}
+
+      {p.observacao_motoboy && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+          <strong>Sua observação:</strong> {p.observacao_motoboy}
         </div>
       )}
     </div>

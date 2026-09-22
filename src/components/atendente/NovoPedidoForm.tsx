@@ -3,7 +3,13 @@
 import { useActionState, useState, type WheelEvent } from "react";
 import { criarPedido, type EstadoFormPedido } from "@/app/atendente/pedidos/novo/actions";
 import SubmitButton from "@/components/ui/SubmitButton";
-import { TIPOS_RECEITA, type NovaReceita, type TipoReceita } from "@/lib/types/database";
+import {
+  TIPOS_RECEITA,
+  type CartaoTipo,
+  type FormaPagamento,
+  type NovaReceita,
+  type TipoReceita,
+} from "@/lib/types/database";
 import { TIPO_RECEITA_LABEL, formatarMoeda } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
 import { BAIRROS_GOVERNADOR_VALADARES } from "@/lib/data/bairrosGovernadorValadares";
@@ -16,23 +22,56 @@ function semScrollNoNumero(e: WheelEvent<HTMLInputElement>) {
   e.currentTarget.blur();
 }
 
+type LinhaPagamento = {
+  forma_pagamento: FormaPagamento | "";
+  valor: string;
+  cartaoTipo: CartaoTipo;
+  parcelar: boolean;
+  parcelas: string;
+  troco: boolean;
+  trocoPara: string;
+  pixPago: boolean;
+};
+
+function linhaVazia(): LinhaPagamento {
+  return {
+    forma_pagamento: "",
+    valor: "",
+    cartaoTipo: "credito",
+    parcelar: false,
+    parcelas: "2",
+    troco: false,
+    trocoPara: "",
+    pixPago: false,
+  };
+}
+
 export default function NovoPedidoForm() {
   const [estado, formAction] = useActionState(criarPedido, estadoInicial);
-  const [formaPagamento, setFormaPagamento] = useState("");
   const [precisaReceita, setPrecisaReceita] = useState(false);
-  const [precisaTroco, setPrecisaTroco] = useState(false);
   const [valorTotal, setValorTotal] = useState("");
-  const [trocoPara, setTrocoPara] = useState("");
-  const [parcelar, setParcelar] = useState(false);
-  const [pixPago, setPixPago] = useState(false);
+  const [pagamentos, setPagamentos] = useState<LinhaPagamento[]>([linhaVazia()]);
   const [receitas, setReceitas] = useState<NovaReceita[]>([
     { tipo_receita: "comum", quantidade: 1 },
   ]);
 
-  const troco =
-    precisaTroco && valorTotal && trocoPara
-      ? calcularTroco(Number(valorTotal), Number(trocoPara))
-      : null;
+  const dividido = pagamentos.length > 1;
+  const somaPagamentos = dividido
+    ? pagamentos.reduce((soma, l) => soma + (Number(l.valor) || 0), 0)
+    : Number(valorTotal) || 0;
+  const diferenca = Math.round((Number(valorTotal || 0) - somaPagamentos) * 100) / 100;
+
+  function atualizarLinha(index: number, mudanca: Partial<LinhaPagamento>) {
+    setPagamentos((atual) => atual.map((l, i) => (i === index ? { ...l, ...mudanca } : l)));
+  }
+
+  function adicionarLinha() {
+    setPagamentos((atual) => [...atual, linhaVazia()]);
+  }
+
+  function removerLinha(index: number) {
+    setPagamentos((atual) => atual.filter((_, i) => i !== index));
+  }
 
   function adicionarReceita() {
     setReceitas((atual) => [...atual, { tipo_receita: "comum", quantidade: 1 }]);
@@ -51,6 +90,15 @@ export default function NovoPedidoForm() {
       ),
     );
   }
+
+  const pagamentosParaEnviar = pagamentos.map((l) => ({
+    forma_pagamento: l.forma_pagamento,
+    valor: dividido ? Number(l.valor) || 0 : Number(valorTotal) || 0,
+    cartao_tipo: l.forma_pagamento === "cartao" ? l.cartaoTipo : null,
+    parcelas: l.forma_pagamento === "cartao" && l.parcelar ? Number(l.parcelas) || 2 : null,
+    troco_para: l.forma_pagamento === "dinheiro" && l.troco ? Number(l.trocoPara) || null : null,
+    pix_pago: l.forma_pagamento === "pix" ? l.pixPago : null,
+  }));
 
   return (
     <form action={formAction} className="max-w-xl space-y-5">
@@ -82,24 +130,6 @@ export default function NovoPedidoForm() {
           <input id="referencia" name="referencia" className={inputClass} />
         </Campo>
 
-        <Campo label="Forma de pagamento" htmlFor="forma_pagamento">
-          <select
-            id="forma_pagamento"
-            name="forma_pagamento"
-            required
-            className={inputClass}
-            value={formaPagamento}
-            onChange={(e) => setFormaPagamento(e.target.value)}
-          >
-            <option value="" disabled>
-              Selecione
-            </option>
-            <option value="dinheiro">Dinheiro</option>
-            <option value="cartao">Cartão</option>
-            <option value="pix">Pix</option>
-          </select>
-        </Campo>
-
         <Campo label="Valor total (R$)" htmlFor="valor_total">
           <input
             id="valor_total"
@@ -116,108 +146,194 @@ export default function NovoPedidoForm() {
         </Campo>
       </div>
 
-      {formaPagamento === "cartao" && (
-        <div className="space-y-3 rounded-lg border border-slate-200 p-3">
-          <p className="text-sm font-medium text-slate-700">Cartão</p>
-          <div className="flex gap-4 text-sm text-slate-700">
-            <label className="flex items-center gap-1.5">
-              <input type="radio" name="cartao_tipo" value="credito" defaultChecked className="h-4 w-4" />
-              Crédito
-            </label>
-            <label className="flex items-center gap-1.5">
-              <input type="radio" name="cartao_tipo" value="debito" className="h-4 w-4" />
-              Débito
-            </label>
-          </div>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input
-              type="checkbox"
-              checked={parcelar}
-              onChange={(e) => setParcelar(e.target.checked)}
-              className="h-4 w-4"
-            />
-            Parcelar
-          </label>
-          {parcelar && (
-            <Campo label="Número de parcelas" htmlFor="parcelas">
-              <input
-                id="parcelas"
-                name="parcelas"
-                type="number"
-                min="2"
-                defaultValue={2}
-                onWheel={semScrollNoNumero}
-                className={inputClass}
-              />
-            </Campo>
-          )}
-        </div>
-      )}
+      <div className="space-y-3 rounded-lg border border-slate-200 p-3">
+        <p className="text-sm font-medium text-slate-700">Forma de pagamento</p>
 
-      {formaPagamento === "pix" && (
-        <div className="space-y-3 rounded-lg border border-slate-200 p-3">
-          <p className="text-sm font-medium text-slate-700">Pix</p>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input
-              type="checkbox"
-              name="pix_pago"
-              checked={pixPago}
-              onChange={(e) => setPixPago(e.target.checked)}
-              className="h-4 w-4"
-            />
-            Já foi pago
-          </label>
-          <Campo label="Comprovante (opcional)" htmlFor="comprovante_pix">
-            <input
-              id="comprovante_pix"
-              name="comprovante_pix"
-              type="file"
-              accept="image/*,.pdf"
-              className="block w-full text-sm text-slate-600"
-            />
-          </Campo>
-        </div>
-      )}
-
-      <div className="space-y-2 rounded-lg border border-slate-200 p-3">
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-          <input
-            type="checkbox"
-            name="precisa_troco"
-            checked={precisaTroco}
-            onChange={(e) => setPrecisaTroco(e.target.checked)}
-            className="h-4 w-4"
-          />
-          Precisa de troco
-        </label>
-        {precisaTroco && (
-          <>
-            <Campo label="Cliente vai pagar com (R$)" htmlFor="troco_para">
-              <input
-                id="troco_para"
-                name="troco_para"
-                type="number"
-                step="0.01"
-                min="0"
-                value={trocoPara}
-                onChange={(e) => setTrocoPara(e.target.value)}
-                onWheel={semScrollNoNumero}
+        {pagamentos.map((linha, index) => (
+          <div key={index} className="space-y-2 rounded-md border border-slate-100 bg-slate-50 p-2.5">
+            <div className="flex items-center gap-2">
+              <select
+                value={linha.forma_pagamento}
+                onChange={(e) =>
+                  atualizarLinha(index, { forma_pagamento: e.target.value as FormaPagamento })
+                }
+                required
                 className={inputClass}
-              />
-            </Campo>
-            {troco !== null && (
-              <p
-                className={`text-sm font-semibold ${
-                  troco < 0 ? "text-red-600" : "text-emerald-700"
-                }`}
               >
-                {troco < 0
-                  ? "O valor informado é menor que o total do pedido."
-                  : `Troco a levar: ${formatarMoeda(troco)}`}
-              </p>
+                <option value="" disabled>
+                  Selecione
+                </option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="cartao">Cartão</option>
+                <option value="pix">Pix</option>
+              </select>
+              {dividido && (
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Valor (R$)"
+                  value={linha.valor}
+                  onChange={(e) => atualizarLinha(index, { valor: e.target.value })}
+                  onWheel={semScrollNoNumero}
+                  className={`${inputClass} w-32 shrink-0`}
+                />
+              )}
+              {pagamentos.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removerLinha(index)}
+                  className="shrink-0 text-sm font-medium text-red-600"
+                >
+                  Remover
+                </button>
+              )}
+            </div>
+
+            {linha.forma_pagamento === "cartao" && (
+              <div className="space-y-2 pl-1">
+                <div className="flex gap-4 text-sm text-slate-700">
+                  <label className="flex items-center gap-1.5">
+                    <input
+                      type="radio"
+                      checked={linha.cartaoTipo === "credito"}
+                      onChange={() => atualizarLinha(index, { cartaoTipo: "credito" })}
+                      className="h-4 w-4"
+                    />
+                    Crédito
+                  </label>
+                  <label className="flex items-center gap-1.5">
+                    <input
+                      type="radio"
+                      checked={linha.cartaoTipo === "debito"}
+                      onChange={() => atualizarLinha(index, { cartaoTipo: "debito" })}
+                      className="h-4 w-4"
+                    />
+                    Débito
+                  </label>
+                </div>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={linha.parcelar}
+                    onChange={(e) => atualizarLinha(index, { parcelar: e.target.checked })}
+                    className="h-4 w-4"
+                  />
+                  Parcelar
+                </label>
+                {linha.parcelar && (
+                  <input
+                    type="number"
+                    min="2"
+                    value={linha.parcelas}
+                    onChange={(e) => atualizarLinha(index, { parcelas: e.target.value })}
+                    onWheel={semScrollNoNumero}
+                    placeholder="Nº de parcelas"
+                    className={`${inputClass} w-32`}
+                  />
+                )}
+              </div>
             )}
-          </>
+
+            {linha.forma_pagamento === "pix" && (
+              <div className="space-y-2 pl-1">
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={linha.pixPago}
+                    onChange={(e) => atualizarLinha(index, { pixPago: e.target.checked })}
+                    className="h-4 w-4"
+                  />
+                  Já foi pago
+                </label>
+                <div className="space-y-1">
+                  <label
+                    htmlFor={`comprovante_pix_${index}`}
+                    className="text-xs font-medium text-slate-600"
+                  >
+                    Comprovante (opcional)
+                  </label>
+                  <input
+                    id={`comprovante_pix_${index}`}
+                    name={`comprovante_pix_${index}`}
+                    type="file"
+                    accept="image/*,.pdf"
+                    className="block w-full text-sm text-slate-600"
+                  />
+                </div>
+              </div>
+            )}
+
+            {linha.forma_pagamento === "dinheiro" && (
+              <div className="space-y-2 pl-1">
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={linha.troco}
+                    onChange={(e) => atualizarLinha(index, { troco: e.target.checked })}
+                    className="h-4 w-4"
+                  />
+                  Precisa de troco
+                </label>
+                {linha.troco && (
+                  <>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Cliente vai pagar com (R$)"
+                      value={linha.trocoPara}
+                      onChange={(e) => atualizarLinha(index, { trocoPara: e.target.value })}
+                      onWheel={semScrollNoNumero}
+                      className={inputClass}
+                    />
+                    {linha.trocoPara &&
+                      (() => {
+                        const base = dividido ? Number(linha.valor) || 0 : Number(valorTotal) || 0;
+                        const troco = calcularTroco(base, Number(linha.trocoPara));
+                        if (troco === null) return null;
+                        return (
+                          <p
+                            className={`text-sm font-semibold ${
+                              troco < 0 ? "text-red-600" : "text-emerald-700"
+                            }`}
+                          >
+                            {troco < 0
+                              ? "O valor informado é menor que o desta linha."
+                              : `Troco a levar: ${formatarMoeda(troco)}`}
+                          </p>
+                        );
+                      })()}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={adicionarLinha}
+          className="text-sm font-medium text-emerald-700"
+        >
+          + Dividir em outra forma de pagamento
+        </button>
+
+        {dividido && (
+          <p
+            className={`text-sm font-semibold ${
+              diferenca === 0 ? "text-emerald-700" : "text-red-600"
+            }`}
+          >
+            {diferenca === 0
+              ? "Valores batem com o total do pedido."
+              : diferenca > 0
+                ? `Falta alocar ${formatarMoeda(diferenca)}.`
+                : `Os valores somam ${formatarMoeda(Math.abs(diferenca))} a mais que o total.`}
+          </p>
         )}
+
+        <input type="hidden" name="pagamentos" value={JSON.stringify(pagamentosParaEnviar)} />
       </div>
 
       <div className="space-y-3 rounded-lg border border-slate-200 p-3">
@@ -278,7 +394,7 @@ export default function NovoPedidoForm() {
         )}
       </div>
 
-      <Campo label="Observações" htmlFor="observacoes">
+      <Campo label="Observações (cliente/endereço)" htmlFor="observacoes">
         <textarea id="observacoes" name="observacoes" rows={3} className={inputClass} />
       </Campo>
 

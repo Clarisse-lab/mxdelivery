@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import ChecklistFinalizar from "@/components/motoboy/ChecklistFinalizar";
-import type { Pedido } from "@/lib/types/database";
+import type { Pedido, Pagamento } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +25,11 @@ export default async function FinalizarEntregaPage({
     redirect(`/motoboy/entregas/${p.id}`);
   }
 
+  const { data: pagamentos } = await supabase
+    .from("pagamentos")
+    .select("*")
+    .eq("pedido_id", id);
+
   return (
     <div className="space-y-4 pb-24">
       <Link href={`/motoboy/entregas/${p.id}`} className="text-sm font-medium text-slate-500">
@@ -34,7 +39,7 @@ export default async function FinalizarEntregaPage({
       <h1 className="text-xl font-semibold text-slate-900">Finalizar entrega #{p.numero}</h1>
       <p className="text-sm text-slate-600">{p.cliente_nome} — {p.endereco}</p>
 
-      <ChecklistFinalizar pedido={p} />
+      <ChecklistFinalizar pedido={p} pagamentos={(pagamentos as Pagamento[]) ?? []} />
     </div>
   );
 }
