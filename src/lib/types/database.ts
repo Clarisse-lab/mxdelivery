@@ -32,8 +32,6 @@ export interface Pedido {
   troco_para: number | null;
 
   precisa_receita: boolean;
-  qtd_receitas: number | null;
-  tipo_receita: string | null;
 
   status: StatusPedido;
 
@@ -61,3 +59,12 @@ export const TIPOS_RECEITA = [
 ] as const;
 
 export type TipoReceita = (typeof TIPOS_RECEITA)[number];
+
+export interface Receita {
+  id: string;
+  pedido_id: string;
+  tipo_receita: TipoReceita;
+  quantidade: number;
+}
+
+export type NovaReceita = { tipo_receita: TipoReceita; quantidade: number };

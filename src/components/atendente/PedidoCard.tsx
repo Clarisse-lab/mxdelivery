@@ -24,10 +24,8 @@ export default function PedidoCard({
           </span>
         )}
       </div>
-      <p className="mt-1 truncate text-sm text-slate-700">{pedido.cliente_nome}</p>
-      {pedido.bairro && (
-        <p className="truncate text-xs text-slate-500">{pedido.bairro}</p>
-      )}
+      <p className="mt-1 truncate text-sm font-bold text-blue-900">{pedido.bairro}</p>
+      <p className="truncate text-xs text-slate-500">{pedido.cliente_nome}</p>
       <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
         <span>{motoboy ? motoboy.nome : "Fila"}</span>
         <span>{tempoDesde(pedido.criado_em)}</span>

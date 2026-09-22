@@ -6,6 +6,8 @@ import {
   finalizarEntrega,
   marcarProblema,
 } from "@/app/motoboy/entregas/[id]/finalizar/actions";
+import { calcularTroco } from "@/lib/utils/troco";
+import { formatarMoeda } from "@/lib/utils/status";
 import type { Pedido } from "@/lib/types/database";
 
 export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
@@ -22,6 +24,7 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
 
   const precisaReceita = pedido.precisa_receita;
   const precisaTroco = pedido.troco_para !== null;
+  const troco = calcularTroco(pedido.valor_total, pedido.troco_para);
 
   const podeFinalizar =
     (!precisaReceita || receitaColetada) &&
@@ -106,7 +109,7 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
         )}
         {precisaTroco && (
           <ChecklistCheckbox
-            label="Entreguei o troco"
+            label={`Entreguei o troco${troco !== null ? ` (${formatarMoeda(troco)})` : ""}`}
             checked={trocoEntregue}
             onChange={setTrocoEntregue}
           />

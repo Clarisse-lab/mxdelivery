@@ -9,7 +9,8 @@ import {
   formatarMoeda,
 } from "@/lib/utils/status";
 import { formatarData } from "@/lib/utils/tempo";
-import type { Pedido, Perfil, TipoReceita } from "@/lib/types/database";
+import { calcularTroco } from "@/lib/utils/troco";
+import type { Pedido, Perfil, Receita } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -21,16 +22,19 @@ export default async function PedidoDetalhePage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: pedido }, { data: motoboys }] = await Promise.all([
+  const [{ data: pedido }, { data: motoboys }, { data: receitas }] = await Promise.all([
     supabase.from("pedidos").select("*").eq("id", id).single(),
     supabase.from("perfis").select("*").eq("papel", "motoboy").eq("ativo", true).order("nome"),
+    supabase.from("receitas").select("*").eq("pedido_id", id),
   ]);
 
   if (!pedido) notFound();
 
   const p = pedido as Pedido;
   const listaMotoboys = (motoboys as Perfil[]) ?? [];
+  const listaReceitas = (receitas as Receita[]) ?? [];
   const motoboyAtual = listaMotoboys.find((m) => m.id === p.motoboy_id);
+  const troco = calcularTroco(p.valor_total, p.troco_para);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -39,6 +43,11 @@ export default async function PedidoDetalhePage({
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_BADGE_CLASS[p.status]}`}>
           {STATUS_LABEL[p.status]}
         </span>
+      </div>
+
+      <div className="inline-flex items-baseline gap-2 rounded-lg bg-blue-50 px-3 py-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-blue-600">Bairro</span>
+        <span className="text-lg font-bold text-blue-900">{p.bairro}</span>
       </div>
 
       {p.status === "problema" && p.motivo_problema && (
@@ -51,19 +60,14 @@ export default async function PedidoDetalhePage({
         <Info label="Cliente" valor={p.cliente_nome} />
         <Info label="Motoboy" valor={motoboyAtual?.nome ?? "Fila (sem motoboy)"} />
         <Info label="Endereço" valor={p.endereco} className="sm:col-span-2" />
-        <Info label="Bairro" valor={p.bairro ?? "—"} />
         <Info label="Referência" valor={p.referencia ?? "—"} />
         <Info label="Forma de pagamento" valor={FORMA_PAGAMENTO_LABEL[p.forma_pagamento]} />
         <Info label="Valor total" valor={formatarMoeda(p.valor_total)} />
         <Info
           label="Troco"
-          valor={p.troco_para ? `Para ${formatarMoeda(p.troco_para)}` : "Não precisa"}
-        />
-        <Info
-          label="Receita controlada"
           valor={
-            p.precisa_receita
-              ? `${p.qtd_receitas ?? "?"}x · ${TIPO_RECEITA_LABEL[p.tipo_receita as TipoReceita] ?? p.tipo_receita}`
+            troco !== null
+              ? `Levar ${formatarMoeda(troco)} (paga com ${formatarMoeda(p.troco_para!)})`
               : "Não precisa"
           }
         />
@@ -71,6 +75,19 @@ export default async function PedidoDetalhePage({
           <Info label="Observações" valor={p.observacoes} className="sm:col-span-2" />
         )}
       </div>
+
+      {p.precisa_receita && (
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="mb-2 text-sm font-semibold text-slate-700">Receitas</h2>
+          <ul className="space-y-1 text-sm text-slate-900">
+            {listaReceitas.map((r) => (
+              <li key={r.id}>
+                {r.quantidade}x · {TIPO_RECEITA_LABEL[r.tipo_receita]}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="rounded-lg border border-slate-200 bg-white p-4">
         <h2 className="mb-3 text-sm font-semibold text-slate-700">Checklist de finalização</h2>

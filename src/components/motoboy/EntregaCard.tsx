@@ -19,8 +19,8 @@ export default function EntregaCard({
             {STATUS_LABEL[pedido.status]}
           </span>
         </div>
-        <p className="mt-1 text-base text-slate-800">{pedido.cliente_nome}</p>
-        {pedido.bairro && <p className="text-sm text-slate-500">{pedido.bairro}</p>}
+        <p className="mt-1 text-xl font-bold text-blue-900">{pedido.bairro}</p>
+        <p className="text-sm text-slate-600">{pedido.cliente_nome}</p>
         {pedido.precisa_receita && (
           <p className="mt-2 inline-block rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">
             Precisa recolher receita

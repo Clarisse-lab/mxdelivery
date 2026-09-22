@@ -3,8 +3,9 @@
 import { useActionState, useState } from "react";
 import { criarPedido, type EstadoFormPedido } from "@/app/atendente/pedidos/novo/actions";
 import SubmitButton from "@/components/ui/SubmitButton";
-import { TIPOS_RECEITA } from "@/lib/types/database";
-import { TIPO_RECEITA_LABEL } from "@/lib/utils/status";
+import { TIPOS_RECEITA, type NovaReceita, type TipoReceita } from "@/lib/types/database";
+import { TIPO_RECEITA_LABEL, formatarMoeda } from "@/lib/utils/status";
+import { calcularTroco } from "@/lib/utils/troco";
 
 const estadoInicial: EstadoFormPedido = {};
 
@@ -12,6 +13,34 @@ export default function NovoPedidoForm() {
   const [estado, formAction] = useActionState(criarPedido, estadoInicial);
   const [precisaReceita, setPrecisaReceita] = useState(false);
   const [precisaTroco, setPrecisaTroco] = useState(false);
+  const [valorTotal, setValorTotal] = useState("");
+  const [trocoPara, setTrocoPara] = useState("");
+  const [receitas, setReceitas] = useState<NovaReceita[]>([
+    { tipo_receita: "comum", quantidade: 1 },
+  ]);
+
+  const troco =
+    precisaTroco && valorTotal && trocoPara
+      ? calcularTroco(Number(valorTotal), Number(trocoPara))
+      : null;
+
+  function adicionarReceita() {
+    setReceitas((atual) => [...atual, { tipo_receita: "comum", quantidade: 1 }]);
+  }
+
+  function removerReceita(index: number) {
+    setReceitas((atual) => atual.filter((_, i) => i !== index));
+  }
+
+  function atualizarReceita(index: number, campo: keyof NovaReceita, valor: string) {
+    setReceitas((atual) =>
+      atual.map((r, i) =>
+        i === index
+          ? { ...r, [campo]: campo === "quantidade" ? Number(valor) || 1 : (valor as TipoReceita) }
+          : r,
+      ),
+    );
+  }
 
   return (
     <form action={formAction} className="max-w-xl space-y-5">
@@ -25,7 +54,7 @@ export default function NovoPedidoForm() {
         </Campo>
 
         <Campo label="Bairro" htmlFor="bairro">
-          <input id="bairro" name="bairro" className={inputClass} />
+          <input id="bairro" name="bairro" required className={inputClass} />
         </Campo>
 
         <Campo label="Ponto de referência" htmlFor="referencia">
@@ -51,6 +80,8 @@ export default function NovoPedidoForm() {
             step="0.01"
             min="0"
             required
+            value={valorTotal}
+            onChange={(e) => setValorTotal(e.target.value)}
             className={inputClass}
           />
         </Campo>
@@ -68,16 +99,31 @@ export default function NovoPedidoForm() {
           Precisa de troco
         </label>
         {precisaTroco && (
-          <Campo label="Troco para (R$)" htmlFor="troco_para">
-            <input
-              id="troco_para"
-              name="troco_para"
-              type="number"
-              step="0.01"
-              min="0"
-              className={inputClass}
-            />
-          </Campo>
+          <>
+            <Campo label="Cliente vai pagar com (R$)" htmlFor="troco_para">
+              <input
+                id="troco_para"
+                name="troco_para"
+                type="number"
+                step="0.01"
+                min="0"
+                value={trocoPara}
+                onChange={(e) => setTrocoPara(e.target.value)}
+                className={inputClass}
+              />
+            </Campo>
+            {troco !== null && (
+              <p
+                className={`text-sm font-semibold ${
+                  troco < 0 ? "text-red-600" : "text-emerald-700"
+                }`}
+              >
+                {troco < 0
+                  ? "O valor informado é menor que o total do pedido."
+                  : `Troco a levar: ${formatarMoeda(troco)}`}
+              </p>
+            )}
+          </>
         )}
       </div>
 
@@ -94,25 +140,46 @@ export default function NovoPedidoForm() {
         </label>
 
         {precisaReceita && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Campo label="Quantidade de receitas" htmlFor="qtd_receitas">
-              <input
-                id="qtd_receitas"
-                name="qtd_receitas"
-                type="number"
-                min="1"
-                className={inputClass}
-              />
-            </Campo>
-            <Campo label="Tipo de receita" htmlFor="tipo_receita">
-              <select id="tipo_receita" name="tipo_receita" className={inputClass} defaultValue="comum">
-                {TIPOS_RECEITA.map((tipo) => (
-                  <option key={tipo} value={tipo}>
-                    {TIPO_RECEITA_LABEL[tipo]}
-                  </option>
-                ))}
-              </select>
-            </Campo>
+          <div className="space-y-3">
+            {receitas.map((receita, index) => (
+              <div key={index} className="grid gap-2 sm:grid-cols-[1fr_5rem_auto]">
+                <select
+                  value={receita.tipo_receita}
+                  onChange={(e) => atualizarReceita(index, "tipo_receita", e.target.value)}
+                  className={inputClass}
+                >
+                  {TIPOS_RECEITA.map((tipo) => (
+                    <option key={tipo} value={tipo}>
+                      {TIPO_RECEITA_LABEL[tipo]}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min="1"
+                  value={receita.quantidade}
+                  onChange={(e) => atualizarReceita(index, "quantidade", e.target.value)}
+                  className={inputClass}
+                />
+                {receitas.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removerReceita(index)}
+                    className="text-sm font-medium text-red-600"
+                  >
+                    Remover
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={adicionarReceita}
+              className="text-sm font-medium text-emerald-700"
+            >
+              + Adicionar outra receita
+            </button>
+            <input type="hidden" name="receitas" value={JSON.stringify(receitas)} />
           </div>
         )}
       </div>

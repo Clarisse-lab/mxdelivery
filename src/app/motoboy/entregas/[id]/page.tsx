@@ -10,7 +10,8 @@ import {
   TIPO_RECEITA_LABEL,
   formatarMoeda,
 } from "@/lib/utils/status";
-import type { Pedido, TipoReceita } from "@/lib/types/database";
+import { calcularTroco } from "@/lib/utils/troco";
+import type { Pedido, Receita } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -24,12 +25,17 @@ export default async function EntregaDetalhePage({
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: pedido } = await supabase.from("pedidos").select("*").eq("id", id).single();
+  const [{ data: pedido }, { data: receitas }] = await Promise.all([
+    supabase.from("pedidos").select("*").eq("id", id).single(),
+    supabase.from("receitas").select("*").eq("pedido_id", id),
+  ]);
   if (!pedido) notFound();
 
   const p = pedido as Pedido;
+  const listaReceitas = (receitas as Receita[]) ?? [];
   const ehMinha = p.motoboy_id === user.id;
   const naFila = p.motoboy_id === null && p.status === "pendente";
+  const troco = calcularTroco(p.valor_total, p.troco_para);
 
   return (
     <div className="space-y-4 pb-24">
@@ -44,13 +50,21 @@ export default async function EntregaDetalhePage({
         </span>
       </div>
 
+      <div className="rounded-xl bg-blue-600 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-blue-100">Bairro</p>
+        <p className="text-2xl font-bold text-white">{p.bairro}</p>
+      </div>
+
       {p.precisa_receita && (
         <div className="rounded-xl border-2 border-red-500 bg-red-50 p-4">
           <p className="text-base font-bold text-red-700">⚠ Recolher receita controlada</p>
-          <p className="text-sm text-red-700">
-            {p.qtd_receitas ?? "?"}x ·{" "}
-            {TIPO_RECEITA_LABEL[p.tipo_receita as TipoReceita] ?? p.tipo_receita}
-          </p>
+          <ul className="mt-1 text-sm text-red-700">
+            {listaReceitas.map((r) => (
+              <li key={r.id}>
+                {r.quantidade}x · {TIPO_RECEITA_LABEL[r.tipo_receita]}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
@@ -62,7 +76,6 @@ export default async function EntregaDetalhePage({
         <div>
           <p className="text-xs font-medium text-slate-500">Endereço</p>
           <p className="text-base text-slate-900">{p.endereco}</p>
-          {p.bairro && <p className="text-sm text-slate-600">{p.bairro}</p>}
         </div>
         {p.referencia && (
           <div>
@@ -78,12 +91,12 @@ export default async function EntregaDetalhePage({
           <p className="text-xs font-medium text-slate-500">Valor total</p>
           <p className="text-base text-slate-900">{formatarMoeda(p.valor_total)}</p>
         </div>
-        {p.troco_para !== null && (
+        {troco !== null && (
           <div className="rounded-lg bg-amber-100 p-3">
-            <p className="text-xs font-medium text-amber-800">Troco</p>
-            <p className="text-lg font-bold text-amber-900">
-              Levar troco para {formatarMoeda(p.troco_para)}
+            <p className="text-xs font-medium text-amber-800">
+              Cliente paga com {formatarMoeda(p.troco_para!)}
             </p>
+            <p className="text-lg font-bold text-amber-900">Levar troco: {formatarMoeda(troco)}</p>
           </div>
         )}
         {p.observacoes && (
