@@ -1,0 +1,66 @@
+"use client";
+
+import { useActionState, useEffect, useRef } from "react";
+import { criarMotoboy, type EstadoFormMotoboy } from "@/app/atendente/motoboys/actions";
+import SubmitButton from "@/components/ui/SubmitButton";
+
+const estadoInicial: EstadoFormMotoboy = {};
+const inputClass =
+  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500";
+
+export default function CriarMotoboyForm() {
+  const [estado, formAction] = useActionState(criarMotoboy, estadoInicial);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (estado.sucesso) {
+      formRef.current?.reset();
+    }
+  }, [estado.sucesso]);
+
+  return (
+    <form ref={formRef} action={formAction} className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2">
+      <h2 className="text-sm font-semibold text-slate-700 sm:col-span-2">Novo motoboy</h2>
+
+      <div className="space-y-1">
+        <label htmlFor="nome" className="text-xs font-medium text-slate-600">
+          Nome
+        </label>
+        <input id="nome" name="nome" required className={inputClass} />
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="telefone" className="text-xs font-medium text-slate-600">
+          Telefone
+        </label>
+        <input id="telefone" name="telefone" className={inputClass} />
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="email" className="text-xs font-medium text-slate-600">
+          E-mail (login)
+        </label>
+        <input id="email" name="email" type="email" required className={inputClass} />
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="senha" className="text-xs font-medium text-slate-600">
+          Senha provisória
+        </label>
+        <input id="senha" name="senha" type="text" minLength={6} required className={inputClass} />
+      </div>
+
+      {estado.erro && <p className="text-sm text-red-600 sm:col-span-2">{estado.erro}</p>}
+      {estado.sucesso && (
+        <p className="text-sm text-emerald-700 sm:col-span-2">Motoboy cadastrado com sucesso.</p>
+      )}
+
+      <SubmitButton
+        pendingLabel="Cadastrando..."
+        className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 sm:col-span-2 sm:w-fit"
+      >
+        Cadastrar motoboy
+      </SubmitButton>
+    </form>
+  );
+}
