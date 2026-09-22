@@ -3,30 +3,34 @@ import { getPerfilAtual } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import CriarContaForm from "@/components/atendente/CriarContaForm";
 import ContasList from "@/components/atendente/ContasList";
-import { criarMotoboy, definirAtivo } from "./actions";
+import { criarAtendente, definirAtivo } from "./actions";
 import type { Perfil } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
-export default async function MotoboysPage() {
+export default async function AtendentesPage() {
   const perfil = await getPerfilAtual();
   if (perfil?.papel !== "admin") redirect("/atendente/dashboard");
 
   const supabase = await createClient();
-  const { data: motoboys } = await supabase
+  const { data: atendentes } = await supabase
     .from("perfis")
     .select("*")
-    .eq("papel", "motoboy")
+    .eq("papel", "atendente")
     .order("nome");
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-lg font-semibold text-slate-900">Motoboys</h1>
-      <CriarContaForm titulo="Novo motoboy" rotuloBotao="Cadastrar motoboy" action={criarMotoboy} />
+      <h1 className="text-lg font-semibold text-slate-900">Atendentes</h1>
+      <CriarContaForm
+        titulo="Novo atendente"
+        rotuloBotao="Cadastrar atendente"
+        action={criarAtendente}
+      />
       <ContasList
-        contas={(motoboys as Perfil[]) ?? []}
+        contas={(atendentes as Perfil[]) ?? []}
         definirAtivo={definirAtivo}
-        vazio="Nenhum motoboy cadastrado ainda."
+        vazio="Nenhum atendente cadastrado ainda."
       />
     </div>
   );

@@ -1,4 +1,4 @@
-export type Papel = "atendente" | "motoboy";
+export type Papel = "admin" | "atendente" | "motoboy";
 
 export type StatusPedido =
   | "pendente"

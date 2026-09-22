@@ -1,15 +1,24 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { criarMotoboy, type EstadoFormMotoboy } from "@/app/atendente/motoboys/actions";
 import SubmitButton from "@/components/ui/SubmitButton";
 
-const estadoInicial: EstadoFormMotoboy = {};
+export type EstadoFormConta = { erro?: string; sucesso?: boolean };
+
+const estadoInicial: EstadoFormConta = {};
 const inputClass =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500";
 
-export default function CriarMotoboyForm() {
-  const [estado, formAction] = useActionState(criarMotoboy, estadoInicial);
+export default function CriarContaForm({
+  titulo,
+  rotuloBotao,
+  action,
+}: {
+  titulo: string;
+  rotuloBotao: string;
+  action: (estado: EstadoFormConta, formData: FormData) => Promise<EstadoFormConta>;
+}) {
+  const [estado, formAction] = useActionState(action, estadoInicial);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -19,8 +28,12 @@ export default function CriarMotoboyForm() {
   }, [estado.sucesso]);
 
   return (
-    <form ref={formRef} action={formAction} className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2">
-      <h2 className="text-sm font-semibold text-slate-700 sm:col-span-2">Novo motoboy</h2>
+    <form
+      ref={formRef}
+      action={formAction}
+      className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2"
+    >
+      <h2 className="text-sm font-semibold text-slate-700 sm:col-span-2">{titulo}</h2>
 
       <div className="space-y-1">
         <label htmlFor="nome" className="text-xs font-medium text-slate-600">
@@ -52,14 +65,14 @@ export default function CriarMotoboyForm() {
 
       {estado.erro && <p className="text-sm text-red-600 sm:col-span-2">{estado.erro}</p>}
       {estado.sucesso && (
-        <p className="text-sm text-emerald-700 sm:col-span-2">Motoboy cadastrado com sucesso.</p>
+        <p className="text-sm text-emerald-700 sm:col-span-2">Conta cadastrada com sucesso.</p>
       )}
 
       <SubmitButton
         pendingLabel="Cadastrando..."
         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 sm:col-span-2 sm:w-fit"
       >
-        Cadastrar motoboy
+        {rotuloBotao}
       </SubmitButton>
     </form>
   );

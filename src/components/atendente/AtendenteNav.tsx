@@ -3,16 +3,22 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import type { Papel } from "@/lib/types/database";
 
-const links = [
+const linksBase = [
   { href: "/atendente/dashboard", label: "Pedidos" },
   { href: "/atendente/pedidos/novo", label: "Novo pedido" },
+];
+
+const linksAdmin = [
+  { href: "/atendente/atendentes", label: "Atendentes" },
   { href: "/atendente/motoboys", label: "Motoboys" },
 ];
 
-export default function AtendenteNav({ nome }: { nome: string }) {
+export default function AtendenteNav({ nome, papel }: { nome: string; papel: Papel }) {
   const pathname = usePathname();
   const router = useRouter();
+  const links = papel === "admin" ? [...linksBase, ...linksAdmin] : linksBase;
 
   async function sair() {
     const supabase = createClient();

@@ -12,11 +12,11 @@ export default async function AtendenteLayout({
 
   if (!perfil) redirect("/login");
   if (!perfil.ativo) return <ContaInativa />;
-  if (perfil.papel !== "atendente") redirect("/motoboy/entregas");
+  if (perfil.papel === "motoboy") redirect("/motoboy/entregas");
 
   return (
     <div className="flex min-h-screen flex-1 flex-col bg-slate-50">
-      <AtendenteNav nome={perfil.nome} />
+      <AtendenteNav nome={perfil.nome} papel={perfil.papel} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
     </div>
   );

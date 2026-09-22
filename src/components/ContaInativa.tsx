@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function ContaInativa({
   titulo = "Conta desativada",
-  mensagem = "Sua conta não está mais ativa no sistema. Fale com o atendente da farmácia para reativar o acesso.",
+  mensagem = "Sua conta não está mais ativa no sistema. Fale com o administrador para reativar o acesso.",
 }: {
   titulo?: string;
   mensagem?: string;

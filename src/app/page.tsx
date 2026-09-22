@@ -9,7 +9,7 @@ export default async function Home() {
     return (
       <ContaInativa
         titulo="Perfil não encontrado"
-        mensagem="Sua conta existe no login, mas não tem um perfil cadastrado. Fale com o atendente da farmácia."
+        mensagem="Sua conta existe no login, mas não tem um perfil cadastrado. Fale com o administrador do sistema."
       />
     );
   }
@@ -18,5 +18,5 @@ export default async function Home() {
     return <ContaInativa />;
   }
 
-  redirect(perfil.papel === "atendente" ? "/atendente/dashboard" : "/motoboy/entregas");
+  redirect(perfil.papel === "motoboy" ? "/motoboy/entregas" : "/atendente/dashboard");
 }

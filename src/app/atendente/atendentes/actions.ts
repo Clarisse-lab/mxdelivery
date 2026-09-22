@@ -6,7 +6,7 @@ import { exigirAdmin } from "@/lib/authGuards";
 import { revalidatePath } from "next/cache";
 import type { EstadoFormConta } from "@/components/atendente/CriarContaForm";
 
-export async function criarMotoboy(
+export async function criarAtendente(
   _estadoAnterior: EstadoFormConta,
   formData: FormData,
 ): Promise<EstadoFormConta> {
@@ -29,14 +29,14 @@ export async function criarMotoboy(
     email,
     password: senha,
     email_confirm: true,
-    user_metadata: { nome, telefone: telefone || null, papel: "motoboy" },
+    user_metadata: { nome, telefone: telefone || null, papel: "atendente" },
   });
 
   if (error) {
     return { erro: error.message };
   }
 
-  revalidatePath("/atendente/motoboys");
+  revalidatePath("/atendente/atendentes");
   return { sucesso: true };
 }
 
@@ -47,6 +47,6 @@ export async function definirAtivo(contaId: string, ativo: boolean) {
   const { error } = await supabase.from("perfis").update({ ativo }).eq("id", contaId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/atendente/motoboys");
   revalidatePath("/atendente/atendentes");
+  revalidatePath("/atendente/motoboys");
 }
