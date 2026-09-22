@@ -24,12 +24,13 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
 
   const precisaReceita = pedido.precisa_receita;
   const precisaTroco = pedido.troco_para !== null;
+  const pixJaPago = pedido.forma_pagamento === "pix" && pedido.pix_pago === true;
   const troco = calcularTroco(pedido.valor_total, pedido.troco_para);
 
+  const pagamentoOk = pixJaPago || pagamentoConfirmado;
+
   const podeFinalizar =
-    (!precisaReceita || receitaColetada) &&
-    (!precisaTroco || trocoEntregue) &&
-    pagamentoConfirmado;
+    (!precisaReceita || receitaColetada) && (!precisaTroco || trocoEntregue) && pagamentoOk;
 
   function finalizar() {
     setErro(null);
@@ -38,7 +39,7 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
         await finalizarEntrega(pedido.id, {
           receitaColetada,
           trocoEntregue,
-          pagamentoConfirmado,
+          pagamentoConfirmado: pagamentoOk,
         });
         router.push("/motoboy/entregas");
       } catch (e) {
@@ -114,11 +115,20 @@ export default function ChecklistFinalizar({ pedido }: { pedido: Pedido }) {
             onChange={setTrocoEntregue}
           />
         )}
-        <ChecklistCheckbox
-          label="Recebi o pagamento"
-          checked={pagamentoConfirmado}
-          onChange={setPagamentoConfirmado}
-        />
+        {pixJaPago ? (
+          <p className="flex items-center gap-2 py-1 text-base text-emerald-700">
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
+              ✓
+            </span>
+            Pagamento via Pix já confirmado
+          </p>
+        ) : (
+          <ChecklistCheckbox
+            label="Recebi o pagamento"
+            checked={pagamentoConfirmado}
+            onChange={setPagamentoConfirmado}
+          />
+        )}
       </div>
 
       {erro && <p className="text-sm text-red-600">{erro}</p>}

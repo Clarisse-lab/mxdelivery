@@ -31,7 +31,7 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-6">
-          <span className="font-semibold text-slate-900">Farmácia Valadares</span>
+          <span className="font-semibold text-slate-900">Maxi Popular</span>
           <nav className="flex gap-1">
             {links.map((link) => {
               const ativo = pathname === link.href;

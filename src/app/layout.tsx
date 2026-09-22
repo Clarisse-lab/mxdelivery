@@ -3,8 +3,8 @@ import "./globals.css";
 import RegistrarServiceWorker from "@/components/RegistrarServiceWorker";
 
 export const metadata: Metadata = {
-  title: "Entregas — Farmácia Valadares",
-  description: "Sistema de entregas da Farmácia Valadares",
+  title: "Entregas — Maxi Popular",
+  description: "Sistema de entregas da Maxi Popular",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -40,7 +40,7 @@ export default function LoginPage() {
       >
         <div className="space-y-1 text-center">
           <h1 className="text-xl font-semibold text-slate-900">
-            Farmácia Valadares
+            Maxi Popular
           </h1>
           <p className="text-sm text-slate-500">Sistema de Entregas</p>
         </div>

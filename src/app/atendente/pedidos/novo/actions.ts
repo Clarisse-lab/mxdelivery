@@ -63,6 +63,12 @@ export async function criarPedido(
     return { erro: "Adicione ao menos uma receita ou desmarque \"Precisa de receita\"." };
   }
 
+  const cartaoTipo = formaPagamento === "cartao" ? (formData.get("cartao_tipo") as string) : null;
+  const parcelasRaw = formaPagamento === "cartao" ? (formData.get("parcelas") as string) : null;
+  const pixPago = formaPagamento === "pix" ? formData.get("pix_pago") === "on" : null;
+  const comprovante =
+    formaPagamento === "pix" ? (formData.get("comprovante_pix") as File | null) : null;
+
   const { data, error } = await supabase
     .from("pedidos")
     .insert({
@@ -73,6 +79,9 @@ export async function criarPedido(
       forma_pagamento: formaPagamento,
       valor_total: Number(valorTotalRaw),
       troco_para: precisaTroco && trocoParaRaw ? Number(trocoParaRaw) : null,
+      cartao_tipo: cartaoTipo,
+      parcelas: parcelasRaw ? Number(parcelasRaw) : null,
+      pix_pago: pixPago,
       precisa_receita: precisaReceita,
       observacoes: (formData.get("observacoes") as string)?.trim() || null,
       criado_por: user.id,
@@ -91,6 +100,19 @@ export async function criarPedido(
 
     if (erroReceitas) {
       return { erro: erroReceitas.message };
+    }
+  }
+
+  if (comprovante && comprovante.size > 0) {
+    const extensao = comprovante.name.split(".").pop() ?? "bin";
+    const caminho = `${data.id}/comprovante.${extensao}`;
+
+    const { error: erroUpload } = await supabase.storage
+      .from("comprovantes-pix")
+      .upload(caminho, comprovante, { contentType: comprovante.type });
+
+    if (!erroUpload) {
+      await supabase.from("pedidos").update({ comprovante_pix_path: caminho }).eq("id", data.id);
     }
   }
 

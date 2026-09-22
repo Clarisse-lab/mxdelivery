@@ -1,4 +1,4 @@
-import type { StatusPedido, FormaPagamento, TipoReceita } from "@/lib/types/database";
+import type { StatusPedido, FormaPagamento, TipoReceita, Pedido } from "@/lib/types/database";
 
 export const STATUS_LABEL: Record<StatusPedido, string> = {
   pendente: "Pendente",
@@ -28,6 +28,19 @@ export const TIPO_RECEITA_LABEL: Record<TipoReceita, string> = {
   controle_especial_azul: "Controle especial (azul)",
   antimicrobiano: "Antimicrobiano",
 };
+
+export function descreverFormaPagamento(
+  p: Pick<Pedido, "forma_pagamento" | "cartao_tipo" | "parcelas" | "pix_pago">,
+): string {
+  if (p.forma_pagamento === "cartao") {
+    const tipo = p.cartao_tipo === "debito" ? "Débito" : "Crédito";
+    return p.parcelas ? `Cartão · ${tipo} · ${p.parcelas}x` : `Cartão · ${tipo}`;
+  }
+  if (p.forma_pagamento === "pix") {
+    return p.pix_pago ? "Pix · Pago" : "Pix · Pendente";
+  }
+  return "Dinheiro";
+}
 
 export function formatarMoeda(valor: number): string {
   return new Intl.NumberFormat("pt-BR", {

@@ -1,7 +1,7 @@
 {
-  "name": "Sistema de Entregas - Farmácia Valadares",
+  "name": "Sistema de Entregas - Maxi Popular",
   "short_name": "Entregas",
-  "description": "Sistema de entregas da Farmácia Valadares",
+  "description": "Sistema de entregas da Maxi Popular",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",

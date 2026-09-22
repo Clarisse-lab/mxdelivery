@@ -8,6 +8,7 @@ export type StatusPedido =
   | "cancelado";
 
 export type FormaPagamento = "dinheiro" | "cartao" | "pix";
+export type CartaoTipo = "credito" | "debito";
 
 export interface Perfil {
   id: string;
@@ -30,6 +31,12 @@ export interface Pedido {
   forma_pagamento: FormaPagamento;
   valor_total: number;
   troco_para: number | null;
+
+  cartao_tipo: CartaoTipo | null;
+  parcelas: number | null;
+
+  pix_pago: boolean | null;
+  comprovante_pix_path: string | null;
 
   precisa_receita: boolean;
 

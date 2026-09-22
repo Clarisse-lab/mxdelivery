@@ -4,8 +4,8 @@ import PedidoDetalheAcoes from "@/components/atendente/PedidoDetalheAcoes";
 import {
   STATUS_LABEL,
   STATUS_BADGE_CLASS,
-  FORMA_PAGAMENTO_LABEL,
   TIPO_RECEITA_LABEL,
+  descreverFormaPagamento,
   formatarMoeda,
 } from "@/lib/utils/status";
 import { formatarData } from "@/lib/utils/tempo";
@@ -36,6 +36,14 @@ export default async function PedidoDetalhePage({
   const motoboyAtual = listaMotoboys.find((m) => m.id === p.motoboy_id);
   const troco = calcularTroco(p.valor_total, p.troco_para);
 
+  let comprovanteUrl: string | null = null;
+  if (p.comprovante_pix_path) {
+    const { data: signed } = await supabase.storage
+      .from("comprovantes-pix")
+      .createSignedUrl(p.comprovante_pix_path, 60);
+    comprovanteUrl = signed?.signedUrl ?? null;
+  }
+
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
@@ -61,7 +69,7 @@ export default async function PedidoDetalhePage({
         <Info label="Motoboy" valor={motoboyAtual?.nome ?? "Fila (sem motoboy)"} />
         <Info label="Endereço" valor={p.endereco} className="sm:col-span-2" />
         <Info label="Referência" valor={p.referencia ?? "—"} />
-        <Info label="Forma de pagamento" valor={FORMA_PAGAMENTO_LABEL[p.forma_pagamento]} />
+        <Info label="Forma de pagamento" valor={descreverFormaPagamento(p)} />
         <Info label="Valor total" valor={formatarMoeda(p.valor_total)} />
         <Info
           label="Troco"
@@ -73,6 +81,19 @@ export default async function PedidoDetalhePage({
         />
         {p.observacoes && (
           <Info label="Observações" valor={p.observacoes} className="sm:col-span-2" />
+        )}
+        {comprovanteUrl && (
+          <div className="sm:col-span-2">
+            <p className="text-xs font-medium text-slate-500">Comprovante Pix</p>
+            <a
+              href={comprovanteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-emerald-700 underline"
+            >
+              Ver comprovante
+            </a>
+          </div>
         )}
       </div>
 

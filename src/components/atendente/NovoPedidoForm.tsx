@@ -1,20 +1,30 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, type WheelEvent } from "react";
 import { criarPedido, type EstadoFormPedido } from "@/app/atendente/pedidos/novo/actions";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { TIPOS_RECEITA, type NovaReceita, type TipoReceita } from "@/lib/types/database";
 import { TIPO_RECEITA_LABEL, formatarMoeda } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
+import { BAIRROS_GOVERNADOR_VALADARES } from "@/lib/data/bairrosGovernadorValadares";
 
 const estadoInicial: EstadoFormPedido = {};
 
+// Evita alterar o valor do campo sem querer ao rolar a rodinha do mouse
+// por cima dele — o input perde o foco e o scroll da página segue normal.
+function semScrollNoNumero(e: WheelEvent<HTMLInputElement>) {
+  e.currentTarget.blur();
+}
+
 export default function NovoPedidoForm() {
   const [estado, formAction] = useActionState(criarPedido, estadoInicial);
+  const [formaPagamento, setFormaPagamento] = useState("");
   const [precisaReceita, setPrecisaReceita] = useState(false);
   const [precisaTroco, setPrecisaTroco] = useState(false);
   const [valorTotal, setValorTotal] = useState("");
   const [trocoPara, setTrocoPara] = useState("");
+  const [parcelar, setParcelar] = useState(false);
+  const [pixPago, setPixPago] = useState(false);
   const [receitas, setReceitas] = useState<NovaReceita[]>([
     { tipo_receita: "comum", quantidade: 1 },
   ]);
@@ -54,7 +64,18 @@ export default function NovoPedidoForm() {
         </Campo>
 
         <Campo label="Bairro" htmlFor="bairro">
-          <input id="bairro" name="bairro" required className={inputClass} />
+          <input
+            id="bairro"
+            name="bairro"
+            list="bairros-sugestoes"
+            required
+            className={inputClass}
+          />
+          <datalist id="bairros-sugestoes">
+            {BAIRROS_GOVERNADOR_VALADARES.map((bairro) => (
+              <option key={bairro} value={bairro} />
+            ))}
+          </datalist>
         </Campo>
 
         <Campo label="Ponto de referência" htmlFor="referencia">
@@ -62,7 +83,14 @@ export default function NovoPedidoForm() {
         </Campo>
 
         <Campo label="Forma de pagamento" htmlFor="forma_pagamento">
-          <select id="forma_pagamento" name="forma_pagamento" required className={inputClass} defaultValue="">
+          <select
+            id="forma_pagamento"
+            name="forma_pagamento"
+            required
+            className={inputClass}
+            value={formaPagamento}
+            onChange={(e) => setFormaPagamento(e.target.value)}
+          >
             <option value="" disabled>
               Selecione
             </option>
@@ -82,10 +110,74 @@ export default function NovoPedidoForm() {
             required
             value={valorTotal}
             onChange={(e) => setValorTotal(e.target.value)}
+            onWheel={semScrollNoNumero}
             className={inputClass}
           />
         </Campo>
       </div>
+
+      {formaPagamento === "cartao" && (
+        <div className="space-y-3 rounded-lg border border-slate-200 p-3">
+          <p className="text-sm font-medium text-slate-700">Cartão</p>
+          <div className="flex gap-4 text-sm text-slate-700">
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="cartao_tipo" value="credito" defaultChecked className="h-4 w-4" />
+              Crédito
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" name="cartao_tipo" value="debito" className="h-4 w-4" />
+              Débito
+            </label>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={parcelar}
+              onChange={(e) => setParcelar(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Parcelar
+          </label>
+          {parcelar && (
+            <Campo label="Número de parcelas" htmlFor="parcelas">
+              <input
+                id="parcelas"
+                name="parcelas"
+                type="number"
+                min="2"
+                defaultValue={2}
+                onWheel={semScrollNoNumero}
+                className={inputClass}
+              />
+            </Campo>
+          )}
+        </div>
+      )}
+
+      {formaPagamento === "pix" && (
+        <div className="space-y-3 rounded-lg border border-slate-200 p-3">
+          <p className="text-sm font-medium text-slate-700">Pix</p>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="pix_pago"
+              checked={pixPago}
+              onChange={(e) => setPixPago(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Já foi pago
+          </label>
+          <Campo label="Comprovante (opcional)" htmlFor="comprovante_pix">
+            <input
+              id="comprovante_pix"
+              name="comprovante_pix"
+              type="file"
+              accept="image/*,.pdf"
+              className="block w-full text-sm text-slate-600"
+            />
+          </Campo>
+        </div>
+      )}
 
       <div className="space-y-2 rounded-lg border border-slate-200 p-3">
         <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
@@ -109,6 +201,7 @@ export default function NovoPedidoForm() {
                 min="0"
                 value={trocoPara}
                 onChange={(e) => setTrocoPara(e.target.value)}
+                onWheel={semScrollNoNumero}
                 className={inputClass}
               />
             </Campo>
@@ -159,6 +252,7 @@ export default function NovoPedidoForm() {
                   min="1"
                   value={receita.quantidade}
                   onChange={(e) => atualizarReceita(index, "quantidade", e.target.value)}
+                  onWheel={semScrollNoNumero}
                   className={inputClass}
                 />
                 {receitas.length > 1 && (

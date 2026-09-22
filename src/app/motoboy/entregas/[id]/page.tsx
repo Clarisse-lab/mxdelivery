@@ -6,8 +6,8 @@ import PegarEntregaButton from "@/components/motoboy/PegarEntregaButton";
 import {
   STATUS_LABEL,
   STATUS_BADGE_CLASS,
-  FORMA_PAGAMENTO_LABEL,
   TIPO_RECEITA_LABEL,
+  descreverFormaPagamento,
   formatarMoeda,
 } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
@@ -85,7 +85,7 @@ export default async function EntregaDetalhePage({
         )}
         <div>
           <p className="text-xs font-medium text-slate-500">Forma de pagamento</p>
-          <p className="text-base text-slate-900">{FORMA_PAGAMENTO_LABEL[p.forma_pagamento]}</p>
+          <p className="text-base text-slate-900">{descreverFormaPagamento(p)}</p>
         </div>
         <div>
           <p className="text-xs font-medium text-slate-500">Valor total</p>

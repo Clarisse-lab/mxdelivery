@@ -1,4 +1,4 @@
-# Sistema de Entregas — Farmácia Valadares
+# Sistema de Entregas — Maxi Popular
 
 App web (Next.js + Tailwind + Supabase) para substituir o controle manual
 de entregas em papel. Três papéis: **admin** (controle total, incluindo

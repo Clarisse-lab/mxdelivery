@@ -1,0 +1,37 @@
+// Sugestões de bairros de Governador Valadares - MG pro autocompletar do
+// campo "Bairro". É uma lista de partida com bairros conhecidos da
+// cidade, NÃO é uma lista oficial/completa — vale revisar e completar
+// com os bairros que faltarem. O campo aceita qualquer texto digitado,
+// esta lista é só sugestão (datalist), nunca bloqueia o cadastro.
+export const BAIRROS_GOVERNADOR_VALADARES = [
+  "Altinópolis",
+  "Antônio Dias",
+  "Aventureiro",
+  "Carapina",
+  "Centro",
+  "Cidade Nobre",
+  "Divinópolis",
+  "Esplanada",
+  "Grã-Duquesa",
+  "Ilha dos Araújos",
+  "Ipiranga",
+  "Jardim Panorama",
+  "Jardim Pérola",
+  "Lourdes",
+  "Nova Valadares",
+  "Palmeiras",
+  "Recreio",
+  "Santa Helena",
+  "Santa Rita",
+  "Santos Dumont",
+  "São Cristóvão",
+  "São Pedro",
+  "Serra Verde",
+  "Setor Guanabara",
+  "Sion",
+  "Turmalina",
+  "Universitário",
+  "Vila Bertaux",
+  "Vila Isa",
+  "Vila Ozanam",
+].sort((a, b) => a.localeCompare(b, "pt-BR"));
