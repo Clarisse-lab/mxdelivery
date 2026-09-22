@@ -50,7 +50,7 @@ export default function EntregasList({
   return (
     <div className="space-y-6">
       <section className="space-y-3">
-        <h1 className="text-base font-semibold text-slate-900">Minhas entregas</h1>
+        <h1 className="text-base font-bold text-brand-navy">Minhas entregas</h1>
         {minhas.length === 0 && (
           <p className="text-sm text-slate-500">Você não tem entregas no momento.</p>
         )}
@@ -62,7 +62,7 @@ export default function EntregasList({
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-slate-900">
+        <h2 className="text-base font-bold text-brand-navy">
           Fila disponível{fila.length > 0 && ` (${fila.length})`}
         </h2>
         {erro && <p className="text-sm text-red-600">{erro}</p>}

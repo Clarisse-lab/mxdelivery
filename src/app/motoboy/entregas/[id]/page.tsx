@@ -3,9 +3,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import IniciarRotaButton from "@/components/motoboy/IniciarRotaButton";
 import PegarEntregaButton from "@/components/motoboy/PegarEntregaButton";
+import AcaoFixa from "@/components/motoboy/AcaoFixa";
 import {
-  STATUS_LABEL,
-  STATUS_BADGE_CLASS,
   TIPO_RECEITA_LABEL,
   descreverPagamento,
   formatarMoeda,
@@ -38,17 +37,24 @@ export default async function EntregaDetalhePage({
   const ehMinha = p.motoboy_id === user.id;
   const naFila = p.motoboy_id === null && p.status === "pendente";
 
+  const banner = definirBanner(p.status, ehMinha, naFila);
+
   return (
-    <div className="space-y-4 pb-24">
+    <div className="space-y-4 pb-28">
       <Link href="/motoboy/entregas" className="text-sm font-medium text-slate-500">
         ← Minhas entregas
       </Link>
 
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900">Pedido #{p.numero}</h1>
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_BADGE_CLASS[p.status]}`}>
-          {STATUS_LABEL[p.status]}
-        </span>
+      <div className={`flex items-center gap-3 rounded-xl px-4 py-3 ${banner.classe}`}>
+        {banner.pulsante && (
+          <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-brand-gold" />
+        )}
+        <div className="flex-1">
+          <p className="text-xs font-semibold uppercase tracking-wide opacity-80">
+            Pedido #{p.numero}
+          </p>
+          <p className="text-lg font-bold">{banner.texto}</p>
+        </div>
       </div>
 
       <div className="rounded-xl bg-blue-600 px-4 py-3">
@@ -123,21 +129,6 @@ export default async function EntregaDetalhePage({
         )}
       </div>
 
-      {naFila && <PegarEntregaButton pedidoId={p.id} />}
-
-      {ehMinha && p.status === "pendente" && (
-        <IniciarRotaButton pedidoId={p.id} endereco={p.endereco} bairro={p.bairro} />
-      )}
-
-      {ehMinha && p.status === "em_rota" && (
-        <Link
-          href={`/motoboy/entregas/${p.id}/finalizar`}
-          className="block w-full rounded-lg bg-emerald-600 py-3 text-center text-base font-semibold text-white"
-        >
-          Finalizar entrega
-        </Link>
-      )}
-
       {p.status === "problema" && p.motivo_problema && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           <strong>Problema reportado:</strong> {p.motivo_problema}
@@ -149,6 +140,56 @@ export default async function EntregaDetalhePage({
           <strong>Sua observação:</strong> {p.observacao_motoboy}
         </div>
       )}
+
+      {naFila && (
+        <AcaoFixa>
+          <PegarEntregaButton pedidoId={p.id} />
+        </AcaoFixa>
+      )}
+
+      {ehMinha && p.status === "pendente" && (
+        <AcaoFixa>
+          <IniciarRotaButton pedidoId={p.id} endereco={p.endereco} bairro={p.bairro} />
+        </AcaoFixa>
+      )}
+
+      {ehMinha && p.status === "em_rota" && (
+        <AcaoFixa>
+          <Link
+            href={`/motoboy/entregas/${p.id}/finalizar`}
+            className="block w-full rounded-lg bg-emerald-600 py-3 text-center text-base font-semibold text-white"
+          >
+            Finalizar entrega
+          </Link>
+        </AcaoFixa>
+      )}
     </div>
   );
+}
+
+function definirBanner(status: Pedido["status"], ehMinha: boolean, naFila: boolean) {
+  if (naFila) {
+    return { texto: "Disponível na fila", classe: "bg-slate-100 text-slate-700", pulsante: false };
+  }
+  if (ehMinha && status === "pendente") {
+    return {
+      texto: "Pronta para iniciar",
+      classe: "bg-amber-100 text-amber-900",
+      pulsante: false,
+    };
+  }
+  if (ehMinha && status === "em_rota") {
+    return {
+      texto: "Em rota — a caminho do cliente",
+      classe: "bg-brand-navy text-white",
+      pulsante: true,
+    };
+  }
+  if (status === "problema") {
+    return { texto: "Entrega com problema", classe: "bg-red-100 text-red-900", pulsante: false };
+  }
+  if (status === "entregue") {
+    return { texto: "Entrega concluída", classe: "bg-emerald-100 text-emerald-900", pulsante: false };
+  }
+  return { texto: "Cancelado", classe: "bg-slate-200 text-slate-600", pulsante: false };
 }

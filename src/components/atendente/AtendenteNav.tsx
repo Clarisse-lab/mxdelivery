@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import LogoMaxiPopular from "@/components/LogoMaxiPopular";
 import type { Papel } from "@/lib/types/database";
 
 const linksBase = [
@@ -28,10 +29,10 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
   }
 
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="border-b-2 border-brand-gold bg-brand-navy shadow-sm">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-6">
-          <span className="font-semibold text-slate-900">Maxi Popular</span>
+          <LogoMaxiPopular variante="escuro" />
           <nav className="flex gap-1">
             {links.map((link) => {
               const ativo = pathname === link.href;
@@ -39,10 +40,10 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                     ativo
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "text-slate-600 hover:bg-slate-100"
+                      ? "bg-white/15 text-brand-gold"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   {link.label}
@@ -51,9 +52,9 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-3 text-sm text-slate-600">
+        <div className="flex items-center gap-3 text-sm text-white/80">
           <span>{nome}</span>
-          <button onClick={sair} className="font-medium text-slate-500 hover:text-slate-800">
+          <button onClick={sair} className="font-medium hover:text-white">
             Sair
           </button>
         </div>

@@ -1,7 +1,23 @@
 import Link from "next/link";
 import type { Pedido } from "@/lib/types/database";
-import { STATUS_LABEL, STATUS_BADGE_CLASS } from "@/lib/utils/status";
+import { STATUS_LABEL } from "@/lib/utils/status";
 import { tempoDesde } from "@/lib/utils/tempo";
+
+const BORDA_POR_STATUS: Record<Pedido["status"], string> = {
+  pendente: "border-l-brand-gold",
+  em_rota: "border-l-brand-navy",
+  entregue: "border-l-emerald-500",
+  problema: "border-l-red-500",
+  cancelado: "border-l-slate-300",
+};
+
+const BADGE_POR_STATUS: Record<Pedido["status"], string> = {
+  pendente: "bg-amber-100 text-amber-800",
+  em_rota: "bg-brand-navy text-white",
+  entregue: "bg-emerald-100 text-emerald-800",
+  problema: "bg-red-100 text-red-800",
+  cancelado: "bg-slate-200 text-slate-600",
+};
 
 export default function EntregaCard({
   pedido,
@@ -10,12 +26,23 @@ export default function EntregaCard({
   pedido: Pedido;
   acao?: React.ReactNode;
 }) {
+  const emRota = pedido.status === "em_rota";
+
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div
+      className={`rounded-xl border-l-4 bg-white p-4 shadow-sm ${BORDA_POR_STATUS[pedido.status]} ${
+        emRota ? "ring-1 ring-brand-navy/20" : ""
+      }`}
+    >
       <Link href={`/motoboy/entregas/${pedido.id}`} className="block">
         <div className="flex items-start justify-between gap-2">
           <span className="text-lg font-semibold text-slate-900">#{pedido.numero}</span>
-          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASS[pedido.status]}`}>
+          <span
+            className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${BADGE_POR_STATUS[pedido.status]}`}
+          >
+            {emRota && (
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-gold" />
+            )}
             {STATUS_LABEL[pedido.status]}
           </span>
         </div>

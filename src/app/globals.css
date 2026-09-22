@@ -1,20 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #171717;
+
+  /* Cores da marca Maxi Popular, extraídas do logo (embalagem
+     amarela, "Maxi" em azul, cruz + "Popular" em vermelho). */
+  --brand-navy: #1e3a70;
+  --brand-navy-dark: #142a54;
+  --brand-gold: #f0b429;
+  --brand-gold-dark: #c98a0e;
+  --brand-red: #c1272d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-navy-dark: var(--brand-navy-dark);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-dark: var(--brand-gold-dark);
+  --color-brand-red: var(--brand-red);
 }
 
 body {

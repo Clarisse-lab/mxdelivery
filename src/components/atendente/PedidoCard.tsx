@@ -4,6 +4,14 @@ import Link from "next/link";
 import type { Pedido, Perfil } from "@/lib/types/database";
 import { tempoDesde } from "@/lib/utils/tempo";
 
+const BORDA_POR_STATUS: Record<Pedido["status"], string> = {
+  pendente: "border-l-brand-gold",
+  em_rota: "border-l-brand-navy",
+  entregue: "border-l-emerald-500",
+  problema: "border-l-red-500",
+  cancelado: "border-l-slate-300",
+};
+
 export default function PedidoCard({
   pedido,
   motoboy,
@@ -14,7 +22,7 @@ export default function PedidoCard({
   return (
     <Link
       href={`/atendente/pedidos/${pedido.id}`}
-      className="block rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:border-emerald-300 hover:shadow"
+      className={`block rounded-lg border-l-4 border-y border-r border-slate-200 bg-white p-3 shadow-sm transition-shadow hover:shadow-md ${BORDA_POR_STATUS[pedido.status]}`}
     >
       <div className="flex items-start justify-between gap-2">
         <span className="font-semibold text-slate-900">#{pedido.numero}</span>
