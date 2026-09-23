@@ -16,7 +16,18 @@ export interface Perfil {
   telefone: string | null;
   papel: Papel;
   ativo: boolean;
+  numero_login: string | null;
   criado_em: string;
+}
+
+export interface Convite {
+  numero: string;
+  nome: string;
+  telefone: string | null;
+  papel: Papel;
+  usado: boolean;
+  criado_em: string;
+  usado_em: string | null;
 }
 
 export interface Pedido {

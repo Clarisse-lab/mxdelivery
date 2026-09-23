@@ -2,12 +2,14 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import LogoMaxiPopular from "@/components/LogoMaxiPopular";
+import { emailDoNumero, pareceNumero } from "@/lib/numeroLogin";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identificador, setIdentificador] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
@@ -17,6 +19,10 @@ export default function LoginPage() {
     setErro(null);
     setCarregando(true);
 
+    const email = pareceNumero(identificador)
+      ? emailDoNumero(identificador)
+      : identificador.trim();
+
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -25,7 +31,7 @@ export default function LoginPage() {
 
     if (error) {
       setCarregando(false);
-      setErro("E-mail ou senha inválidos.");
+      setErro("Número/e-mail ou senha inválidos.");
       return;
     }
 
@@ -45,16 +51,16 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="email" className="text-sm font-medium text-slate-700">
-            E-mail
+          <label htmlFor="identificador" className="text-sm font-medium text-slate-700">
+            Número ou e-mail
           </label>
           <input
-            id="email"
-            type="email"
+            id="identificador"
+            type="text"
             required
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
+            value={identificador}
+            onChange={(e) => setIdentificador(e.target.value)}
             className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base outline-none focus:border-brand-navy focus:ring-1 focus:ring-brand-navy"
           />
         </div>
@@ -83,6 +89,13 @@ export default function LoginPage() {
         >
           {carregando ? "Entrando..." : "Entrar"}
         </button>
+
+        <p className="text-center text-sm text-slate-500">
+          Primeiro acesso?{" "}
+          <Link href="/primeiro-acesso" className="font-medium text-brand-navy underline">
+            Criar senha
+          </Link>
+        </p>
       </form>
     </div>
   );

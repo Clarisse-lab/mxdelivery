@@ -1,8 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { exigirAdmin } from "@/lib/authGuards";
+import { criarConvite, excluirConvite as excluirConviteBase } from "@/lib/convites";
 import { revalidatePath } from "next/cache";
 import type { EstadoFormConta } from "@/components/atendente/CriarContaForm";
 
@@ -10,34 +10,14 @@ export async function criarMotoboy(
   _estadoAnterior: EstadoFormConta,
   formData: FormData,
 ): Promise<EstadoFormConta> {
-  await exigirAdmin();
+  const resultado = await criarConvite("motoboy", formData);
+  if (resultado.sucesso) revalidatePath("/atendente/motoboys");
+  return resultado;
+}
 
-  const nome = (formData.get("nome") as string)?.trim();
-  const email = (formData.get("email") as string)?.trim();
-  const telefone = (formData.get("telefone") as string)?.trim();
-  const senha = formData.get("senha") as string;
-
-  if (!nome || !email || !senha) {
-    return { erro: "Preencha nome, e-mail e senha." };
-  }
-  if (senha.length < 6) {
-    return { erro: "A senha precisa ter pelo menos 6 caracteres." };
-  }
-
-  const admin = createAdminClient();
-  const { error } = await admin.auth.admin.createUser({
-    email,
-    password: senha,
-    email_confirm: true,
-    user_metadata: { nome, telefone: telefone || null, papel: "motoboy" },
-  });
-
-  if (error) {
-    return { erro: error.message };
-  }
-
+export async function excluirConvite(numero: string) {
+  await excluirConviteBase(numero);
   revalidatePath("/atendente/motoboys");
-  return { sucesso: true };
 }
 
 export async function definirAtivo(contaId: string, ativo: boolean) {

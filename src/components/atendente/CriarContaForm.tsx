@@ -50,22 +50,26 @@ export default function CriarContaForm({
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="email" className="text-xs font-medium text-slate-600">
-          E-mail (login)
+        <label htmlFor="numero" className="text-xs font-medium text-slate-600">
+          Número (login)
         </label>
-        <input id="email" name="email" type="email" required className={inputClass} />
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="senha" className="text-xs font-medium text-slate-600">
-          Senha provisória
-        </label>
-        <input id="senha" name="senha" type="text" minLength={6} required className={inputClass} />
+        <input
+          id="numero"
+          name="numero"
+          inputMode="numeric"
+          pattern="[0-9]+"
+          placeholder="ex.: 123"
+          required
+          className={inputClass}
+        />
       </div>
 
       {estado.erro && <p className="text-sm text-red-600 sm:col-span-2">{estado.erro}</p>}
       {estado.sucesso && (
-        <p className="text-sm text-emerald-700 sm:col-span-2">Conta cadastrada com sucesso.</p>
+        <p className="text-sm text-emerald-700 sm:col-span-2">
+          Convite criado — a pessoa já pode entrar em &quot;Primeiro acesso&quot; com esse número
+          pra criar a própria senha.
+        </p>
       )}
 
       <SubmitButton

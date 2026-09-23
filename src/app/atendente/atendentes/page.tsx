@@ -3,8 +3,8 @@ import { getPerfilAtual } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import CriarContaForm from "@/components/atendente/CriarContaForm";
 import ContasList from "@/components/atendente/ContasList";
-import { criarAtendente, definirAtivo } from "./actions";
-import type { Perfil } from "@/lib/types/database";
+import { criarAtendente, definirAtivo, excluirConvite } from "./actions";
+import type { Perfil, Convite } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +13,15 @@ export default async function AtendentesPage() {
   if (perfil?.papel !== "admin") redirect("/atendente/dashboard");
 
   const supabase = await createClient();
-  const { data: atendentes } = await supabase
-    .from("perfis")
-    .select("*")
-    .eq("papel", "atendente")
-    .order("nome");
+  const [{ data: atendentes }, { data: convites }] = await Promise.all([
+    supabase.from("perfis").select("*").eq("papel", "atendente").order("nome"),
+    supabase
+      .from("convites")
+      .select("*")
+      .eq("papel", "atendente")
+      .eq("usado", false)
+      .order("criado_em"),
+  ]);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -29,7 +33,9 @@ export default async function AtendentesPage() {
       />
       <ContasList
         contas={(atendentes as Perfil[]) ?? []}
+        convitesPendentes={(convites as Convite[]) ?? []}
         definirAtivo={definirAtivo}
+        excluirConvite={excluirConvite}
         vazio="Nenhum atendente cadastrado ainda."
       />
     </div>

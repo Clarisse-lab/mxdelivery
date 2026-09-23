@@ -19,7 +19,7 @@ está versionado como migrations SQL em `supabase/migrations/`.
 1. Crie um projeto em [supabase.com](https://supabase.com) (ou use um que
    já exista).
 2. Abra o **SQL Editor** do projeto e execute os arquivos de
-   `supabase/migrations/` **em ordem** (0001 → 0006), colando o conteúdo
+   `supabase/migrations/` **em ordem** (0001 → 0011), colando o conteúdo
    de cada um. Alternativamente, use a Supabase CLI:
    ```bash
    supabase link --project-ref <seu-project-ref>
@@ -48,7 +48,21 @@ primeiro admin precisa ser criado manualmente uma única vez:
    agora com acesso também às telas **Atendentes** e **Motoboys**.
 
 A partir daí, use essas duas telas para cadastrar atendentes e
-motoboys — isso já cria o login de cada um.
+motoboys — cada um loga com um **número** (não e-mail).
+
+### Login por número
+
+O admin cadastra só nome + telefone + **número** (o mesmo número interno
+que a farmácia já usa) nas telas Atendentes/Motoboys. Isso cria um
+convite pendente, sem senha ainda. A pessoa então acessa `/primeiro-acesso`,
+digita esse número e cria a própria senha — sem e-mail, sem confirmação.
+A partir daí ela loga em `/login` com número + senha.
+
+Por baixo dos panos o Supabase Auth continua exigindo e-mail, então cada
+número vira um e-mail interno sintetizado (`123@login.maxipopular.internal`,
+ver `src/lib/numeroLogin.ts`) — nunca exposto na interface. Contas antigas
+criadas com e-mail de verdade (como o primeiro admin do passo 2) continuam
+funcionando: a tela de login aceita número **ou** e-mail.
 
 ## 3. Rodar localmente
 
