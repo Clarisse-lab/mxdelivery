@@ -61,7 +61,7 @@ export default function KanbanBoard({
       <div className="grid gap-4 sm:grid-cols-3">
         {colunas.map((coluna) => (
           <div key={coluna.status} className="space-y-2">
-            <h2 className="flex items-center justify-between border-b-2 border-brand-gold pb-1.5 text-sm font-bold text-brand-navy">
+            <h2 className="flex items-center justify-between rounded-lg bg-brand-gold px-3 py-1.5 text-sm font-bold text-brand-navy">
               {coluna.titulo}
               <span className="rounded-full bg-brand-navy px-2 py-0.5 text-xs font-semibold text-white">
                 {coluna.pedidos.length}

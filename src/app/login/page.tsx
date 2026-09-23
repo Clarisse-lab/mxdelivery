@@ -34,7 +34,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center bg-gradient-to-br from-brand-navy-dark via-brand-navy to-slate-800 px-4">
+    <div className="flex min-h-screen flex-1 items-center justify-center bg-gradient-to-br from-amber-200 via-brand-gold to-brand-gold-dark px-4">
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm space-y-5 rounded-2xl bg-white p-8 shadow-2xl ring-1 ring-black/5"

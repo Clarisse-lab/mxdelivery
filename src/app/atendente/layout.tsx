@@ -15,7 +15,7 @@ export default async function AtendenteLayout({
   if (perfil.papel === "motoboy") redirect("/motoboy/entregas");
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-1 flex-col bg-amber-50">
       <AtendenteNav nome={perfil.nome} papel={perfil.papel} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
     </div>

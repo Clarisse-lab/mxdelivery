@@ -29,10 +29,10 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
   }
 
   return (
-    <header className="border-b-2 border-brand-gold bg-brand-navy shadow-sm">
+    <header className="border-b-2 border-brand-navy bg-brand-gold shadow-sm">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-6">
-          <LogoMaxiPopular variante="escuro" />
+          <LogoMaxiPopular variante="claro" />
           <nav className="flex gap-1">
             {links.map((link) => {
               const ativo = pathname === link.href;
@@ -42,8 +42,8 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
                   href={link.href}
                   className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                     ativo
-                      ? "bg-white/15 text-brand-gold"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                      ? "bg-brand-navy text-white"
+                      : "text-brand-navy/80 hover:bg-black/10 hover:text-brand-navy"
                   }`}
                 >
                   {link.label}
@@ -52,9 +52,9 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
             })}
           </nav>
         </div>
-        <div className="flex items-center gap-3 text-sm text-white/80">
+        <div className="flex items-center gap-3 text-sm text-brand-navy/80">
           <span>{nome}</span>
-          <button onClick={sair} className="font-medium hover:text-white">
+          <button onClick={sair} className="font-medium hover:text-brand-navy">
             Sair
           </button>
         </div>

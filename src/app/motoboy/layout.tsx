@@ -15,7 +15,7 @@ export default async function MotoboyLayout({
   if (perfil.papel !== "motoboy") redirect("/atendente/dashboard");
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-1 flex-col bg-amber-50">
       <MotoboyHeader nome={perfil.nome} />
       <main className="flex-1 px-4 py-4">{children}</main>
     </div>
