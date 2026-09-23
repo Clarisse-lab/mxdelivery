@@ -3,20 +3,12 @@ import type { Pedido } from "@/lib/types/database";
 import { STATUS_LABEL } from "@/lib/utils/status";
 import { tempoDesde } from "@/lib/utils/tempo";
 
-const BORDA_POR_STATUS: Record<Pedido["status"], string> = {
-  pendente: "border-l-brand-gold",
-  em_rota: "border-l-brand-navy",
-  entregue: "border-l-emerald-500",
-  problema: "border-l-red-500",
-  cancelado: "border-l-slate-300",
-};
-
-const BADGE_POR_STATUS: Record<Pedido["status"], string> = {
-  pendente: "bg-amber-100 text-amber-800",
-  em_rota: "bg-brand-navy text-white",
-  entregue: "bg-emerald-100 text-emerald-800",
-  problema: "bg-red-100 text-red-800",
-  cancelado: "bg-slate-200 text-slate-600",
+const UI: Record<Pedido["status"], { bar: string; badge: string }> = {
+  pendente: { bar: "bg-brand-gold", badge: "bg-amber-50 text-amber-800" },
+  em_rota: { bar: "bg-blue-500", badge: "bg-blue-50 text-brand-blue" },
+  entregue: { bar: "bg-emerald-500", badge: "bg-emerald-50 text-emerald-700" },
+  problema: { bar: "bg-red-500", badge: "bg-red-50 text-red-700" },
+  cancelado: { bar: "bg-slate-300", badge: "bg-slate-100 text-slate-500" },
 };
 
 export default function EntregaCard({
@@ -26,36 +18,39 @@ export default function EntregaCard({
   pedido: Pedido;
   acao?: React.ReactNode;
 }) {
-  const emRota = pedido.status === "em_rota";
+  const ui = UI[pedido.status];
 
   return (
-    <div
-      className={`rounded-xl border-l-4 bg-white p-4 shadow-sm ${BORDA_POR_STATUS[pedido.status]} ${
-        emRota ? "ring-1 ring-brand-navy/20" : ""
-      }`}
-    >
-      <Link href={`/motoboy/entregas/${pedido.id}`} className="block">
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-lg font-semibold text-slate-900">#{pedido.numero}</span>
-          <span
-            className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${BADGE_POR_STATUS[pedido.status]}`}
-          >
-            {emRota && (
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-gold" />
-            )}
+    <article className="relative overflow-hidden rounded-[22px] border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(7,31,61,.055)]">
+      <span className={"absolute inset-y-0 left-0 w-1 " + ui.bar} />
+      <Link href={"/motoboy/entregas/" + pedido.id} className="block">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-350">Pedido</p>
+            <span className="mt-0.5 block text-base font-black text-brand-navy-dark">#{pedido.numero}</span>
+          </div>
+          <span className={"rounded-full px-2.5 py-1 text-[10px] font-extrabold " + ui.badge}>
             {STATUS_LABEL[pedido.status]}
           </span>
         </div>
-        <p className="mt-1 text-xl font-bold text-blue-900">{pedido.bairro}</p>
-        <p className="text-sm text-slate-600">{pedido.cliente_nome}</p>
+
+        <div className="mt-3 rounded-2xl bg-slate-50 px-3.5 py-3">
+          <p className="text-lg font-black tracking-[-0.025em] text-brand-navy">{pedido.bairro}</p>
+          <p className="mt-0.5 text-sm font-semibold text-slate-600">{pedido.cliente_nome}</p>
+        </div>
+
         {pedido.precisa_receita && (
-          <p className="mt-2 inline-block rounded bg-red-100 px-2 py-1 text-xs font-semibold text-red-700">
-            Precisa recolher receita
+          <p className="mt-3 inline-flex rounded-lg bg-red-50 px-2 py-1 text-[10px] font-extrabold text-brand-red">
+            Recolher receita
           </p>
         )}
-        <p className="mt-2 text-xs text-slate-400">{tempoDesde(pedido.criado_em)}</p>
+
+        <div className="mt-3 flex items-center justify-between text-[11px]">
+          <span className="font-medium text-slate-400">{tempoDesde(pedido.criado_em)}</span>
+          <span className="font-extrabold text-brand-navy">Ver detalhes →</span>
+        </div>
       </Link>
-      {acao && <div className="mt-3">{acao}</div>}
-    </div>
+      {acao && <div className="mt-4 border-t border-slate-100 pt-4">{acao}</div>}
+    </article>
   );
 }

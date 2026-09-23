@@ -13,6 +13,13 @@ const links = [
 export default function MotoboyHeader({ nome }: { nome: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const iniciais = nome
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
 
   async function sair() {
     const supabase = createClient();
@@ -22,32 +29,45 @@ export default function MotoboyHeader({ nome }: { nome: string }) {
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b-2 border-brand-navy bg-brand-gold px-4 py-3 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <LogoMaxiPopular variante="claro" />
-          <p className="text-xs text-brand-navy/70">{nome}</p>
-        </div>
-        <button onClick={sair} className="text-sm font-medium text-brand-navy/80 hover:text-brand-navy">
-          Sair
-        </button>
-      </div>
-      <nav className="mt-2 flex gap-1">
-        {links.map((link) => {
-          const ativo = pathname === link.href;
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-                ativo ? "bg-brand-navy text-white" : "text-brand-navy/80 hover:bg-black/10"
-              }`}
+    <header className="sticky top-0 z-40 overflow-hidden border-b border-brand-navy/10 bg-brand-gold shadow-[0_8px_28px_rgba(13,49,94,.09)]">
+      <div className="mx-auto max-w-2xl px-4 pb-3 pt-3.5">
+        <div className="flex items-center justify-between gap-3">
+          <LogoMaxiPopular />
+          <div className="flex items-center gap-2.5">
+            <div className="hidden text-right sm:block">
+              <p className="text-xs font-extrabold text-brand-navy-dark">{nome}</p>
+              <p className="text-[10px] font-bold text-emerald-700">● Online</p>
+            </div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-navy text-[11px] font-black text-white">
+              {iniciais || "MX"}
+            </div>
+            <button
+              onClick={sair}
+              className="rounded-full border border-brand-navy/15 bg-white/65 px-3 py-1.5 text-[11px] font-bold text-brand-navy"
             >
-              {link.label}
-            </Link>
-          );
-        })}
-      </nav>
+              Sair
+            </button>
+          </div>
+        </div>
+
+        <nav className="mt-3 flex rounded-xl bg-brand-navy/8 p-1">
+          {links.map((link) => {
+            const ativo = pathname === link.href || pathname.startsWith(link.href + "/");
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={
+                  "flex-1 rounded-lg px-3 py-2 text-center text-xs font-extrabold " +
+                  (ativo ? "bg-brand-navy text-white shadow-sm" : "text-brand-navy/65")
+                }
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
     </header>
   );
 }
