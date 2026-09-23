@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getPerfilAtual } from "@/lib/auth";
 import PedidoDetalheAcoes from "@/components/atendente/PedidoDetalheAcoes";
 import {
   STATUS_LABEL,
@@ -21,6 +22,7 @@ export default async function PedidoDetalhePage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const perfilAtual = await getPerfilAtual();
 
   const [{ data: pedido }, { data: motoboys }, { data: receitas }, { data: pagamentos }] =
     await Promise.all([
@@ -40,6 +42,14 @@ export default async function PedidoDetalhePage({
   const precisaTroco = listaPagamentos.some(
     (pg) => pg.forma_pagamento === "dinheiro" && pg.troco_para !== null,
   );
+
+  const podeEditar = perfilAtual?.papel === "admin" || p.criado_por === perfilAtual?.id;
+
+  let criador: Perfil | null = null;
+  if (p.criado_por !== perfilAtual?.id) {
+    const { data } = await supabase.from("perfis").select("*").eq("id", p.criado_por).single();
+    criador = data as Perfil | null;
+  }
 
   const comprovantes = await Promise.all(
     listaPagamentos
@@ -81,6 +91,7 @@ export default async function PedidoDetalhePage({
       <div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-2">
         <Info label="Cliente" valor={p.cliente_nome} />
         <Info label="Motoboy" valor={motoboyAtual?.nome ?? "Fila (sem motoboy)"} />
+        {criador && <Info label="Criado por" valor={criador.nome} />}
         <Info label="Endereço" valor={p.endereco} className="sm:col-span-2" />
         <Info label="Referência" valor={p.referencia ?? "—"} />
         <Info label="Valor total" valor={formatarMoeda(p.valor_total)} />
@@ -154,12 +165,19 @@ export default async function PedidoDetalhePage({
         </dl>
       </div>
 
-      <PedidoDetalheAcoes
-        pedidoId={p.id}
-        statusAtual={p.status}
-        motoboyAtualId={p.motoboy_id}
-        motoboys={listaMotoboys}
-      />
+      {podeEditar ? (
+        <PedidoDetalheAcoes
+          pedidoId={p.id}
+          statusAtual={p.status}
+          motoboyAtualId={p.motoboy_id}
+          motoboys={listaMotoboys}
+        />
+      ) : (
+        <p className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+          Este pedido foi criado por {criador?.nome ?? "outro atendente"} — só quem criou (ou um
+          admin) pode reatribuir motoboy ou cancelar.
+        </p>
+      )}
     </div>
   );
 }

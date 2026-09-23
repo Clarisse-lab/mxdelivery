@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { usePedidosRealtime } from "@/lib/hooks/usePedidosRealtime";
 import type { Pedido, Perfil, StatusPedido } from "@/lib/types/database";
 import PedidoCard from "./PedidoCard";
 
@@ -12,13 +11,12 @@ const COLUNAS: { status: StatusPedido; titulo: string }[] = [
 ];
 
 export default function KanbanBoard({
-  pedidosIniciais,
+  pedidos,
   motoboys,
 }: {
-  pedidosIniciais: Pedido[];
+  pedidos: Pedido[];
   motoboys: Perfil[];
 }) {
-  const pedidos = usePedidosRealtime(pedidosIniciais);
   const motoboysPorId = useMemo(
     () => new Map(motoboys.map((m) => [m.id, m])),
     [motoboys],
