@@ -67,7 +67,7 @@ export const TIPOS_RECEITA = [
   "comum",
   "controle_especial_branca",
   "controle_especial_azul",
-  "antimicrobiano",
+  "controle_especial_amarela",
 ] as const;
 
 export type TipoReceita = (typeof TIPOS_RECEITA)[number];

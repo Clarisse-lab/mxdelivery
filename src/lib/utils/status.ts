@@ -26,7 +26,7 @@ export const TIPO_RECEITA_LABEL: Record<TipoReceita, string> = {
   comum: "Comum",
   controle_especial_branca: "Controle especial (branca)",
   controle_especial_azul: "Controle especial (azul)",
-  antimicrobiano: "Antimicrobiano",
+  controle_especial_amarela: "Controle especial (amarela)",
 };
 
 export function descreverPagamento(p: Pagamento | NovoPagamentoDescricao): string {
