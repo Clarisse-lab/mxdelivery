@@ -6,7 +6,7 @@ import { usePedidosRealtime } from "@/lib/hooks/usePedidosRealtime";
 import { useAgora } from "@/lib/hooks/useAgora";
 import { useAlertaAtraso } from "@/lib/hooks/useAlertaAtraso";
 import { useAlertaNovoPedido } from "@/lib/hooks/useAlertaNovoPedido";
-import { estaAtrasado } from "@/lib/utils/atraso";
+import { calcularNivelUrgencia } from "@/lib/utils/atraso";
 import { pegarPedido } from "@/app/motoboy/entregas/actions";
 import type { Pedido } from "@/lib/types/database";
 import EntregaCard from "./EntregaCard";
@@ -91,7 +91,7 @@ export default function EntregasList({
 
         <div className="space-y-3">
           {minhas.map((pedido) => (
-            <EntregaCard key={pedido.id} pedido={pedido} atrasado={estaAtrasado(pedido, agora)} />
+            <EntregaCard key={pedido.id} pedido={pedido} nivelUrgencia={calcularNivelUrgencia(pedido, agora)} />
           ))}
         </div>
       </section>
@@ -121,6 +121,7 @@ export default function EntregasList({
             <EntregaCard
               key={pedido.id}
               pedido={pedido}
+              nivelUrgencia={calcularNivelUrgencia(pedido, agora)}
               acao={
                 <button
                   onClick={() => pegar(pedido.id)}

@@ -11,7 +11,7 @@ import {
 } from "@/lib/utils/status";
 import { formatarData } from "@/lib/utils/tempo";
 import { calcularTroco } from "@/lib/utils/troco";
-import { estaAtrasado } from "@/lib/utils/atraso";
+import { calcularNivelUrgencia, URGENCIA_UI } from "@/lib/utils/atraso";
 import type { Pedido, Perfil, Receita, Pagamento } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +45,7 @@ export default async function PedidoDetalhePage({
   );
 
   const podeEditar = perfilAtual?.papel === "admin" || p.criado_por === perfilAtual?.id;
+  const urgencia = URGENCIA_UI[calcularNivelUrgencia(p)];
 
   let criador: Perfil | null = null;
   if (p.criado_por !== perfilAtual?.id) {
@@ -79,9 +80,15 @@ export default async function PedidoDetalhePage({
               <span className={"rounded-full px-3 py-1 text-[11px] font-extrabold " + STATUS_BADGE_CLASS[p.status]}>
                 {STATUS_LABEL[p.status]}
               </span>
-              {estaAtrasado(p) && (
-                <span className="animate-pulse rounded-full bg-red-600 px-3 py-1 text-[11px] font-extrabold text-white">
-                  ⏰ Atrasado
+              {urgencia && (
+                <span
+                  className={
+                    "rounded-full px-3 py-1 text-[11px] font-extrabold " +
+                    urgencia.badge +
+                    (urgencia.pulsante ? " animate-pulse" : "")
+                  }
+                >
+                  ⏰ {urgencia.label}
                 </span>
               )}
             </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { Pedido, Perfil } from "@/lib/types/database";
 import { tempoDesde } from "@/lib/utils/tempo";
+import { URGENCIA_UI, type NivelUrgencia } from "@/lib/utils/atraso";
 
 const STATUS: Record<Pedido["status"], { bar: string; badge: string; label: string }> = {
   pendente: { bar: "bg-brand-gold", badge: "bg-amber-50 text-amber-800", label: "Pendente" },
@@ -15,23 +16,24 @@ const STATUS: Record<Pedido["status"], { bar: string; badge: string; label: stri
 export default function PedidoCard({
   pedido,
   motoboy,
-  atrasado = false,
+  nivelUrgencia = "normal",
 }: {
   pedido: Pedido;
   motoboy?: Perfil;
-  atrasado?: boolean;
+  nivelUrgencia?: NivelUrgencia;
 }) {
   const status = STATUS[pedido.status];
+  const urgencia = URGENCIA_UI[nivelUrgencia];
 
   return (
     <Link
       href={"/atendente/pedidos/" + pedido.id}
       className={
         "group relative block overflow-hidden rounded-2xl border bg-white p-4 shadow-[0_2px_9px_rgba(7,31,61,.045)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(7,31,61,.08)] " +
-        (atrasado ? "border-red-300 hover:border-red-400" : "border-slate-200/80 hover:border-brand-navy/15")
+        (urgencia?.borda ?? "border-slate-200/80 hover:border-brand-navy/15")
       }
     >
-      <span className={"absolute inset-y-0 left-0 w-1 " + status.bar} />
+      <span className={"absolute inset-y-0 left-0 w-1 " + (urgencia?.bar ?? status.bar)} />
 
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -42,9 +44,15 @@ export default function PedidoCard({
           <span className={"rounded-full px-2 py-1 text-[9px] font-extrabold " + status.badge}>
             {status.label}
           </span>
-          {atrasado && (
-            <span className="animate-pulse rounded-full bg-red-600 px-2 py-1 text-[9px] font-extrabold text-white">
-              ⏰ Atrasado
+          {urgencia && (
+            <span
+              className={
+                "rounded-full px-2 py-1 text-[9px] font-extrabold " +
+                urgencia.badge +
+                (urgencia.pulsante ? " animate-pulse" : "")
+              }
+            >
+              ⏰ {urgencia.label}
             </span>
           )}
         </div>

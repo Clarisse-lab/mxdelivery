@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Pedido } from "@/lib/types/database";
 import { STATUS_LABEL } from "@/lib/utils/status";
 import { tempoDesde } from "@/lib/utils/tempo";
+import { URGENCIA_UI, type NivelUrgencia } from "@/lib/utils/atraso";
 
 const UI: Record<Pedido["status"], { bar: string; badge: string }> = {
   pendente: { bar: "bg-brand-gold", badge: "bg-amber-50 text-amber-800" },
@@ -14,22 +15,23 @@ const UI: Record<Pedido["status"], { bar: string; badge: string }> = {
 export default function EntregaCard({
   pedido,
   acao,
-  atrasado = false,
+  nivelUrgencia = "normal",
 }: {
   pedido: Pedido;
   acao?: React.ReactNode;
-  atrasado?: boolean;
+  nivelUrgencia?: NivelUrgencia;
 }) {
   const ui = UI[pedido.status];
+  const urgencia = URGENCIA_UI[nivelUrgencia];
 
   return (
     <article
       className={
         "relative overflow-hidden rounded-[22px] border bg-white p-4 shadow-[0_8px_28px_rgba(7,31,61,.055)] " +
-        (atrasado ? "border-red-300" : "border-slate-200/80")
+        (urgencia?.borda ?? "border-slate-200/80")
       }
     >
-      <span className={"absolute inset-y-0 left-0 w-1 " + ui.bar} />
+      <span className={"absolute inset-y-0 left-0 w-1 " + (urgencia?.bar ?? ui.bar)} />
       <Link href={"/motoboy/entregas/" + pedido.id} className="block">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -40,9 +42,15 @@ export default function EntregaCard({
             <span className={"rounded-full px-2.5 py-1 text-[10px] font-extrabold " + ui.badge}>
               {STATUS_LABEL[pedido.status]}
             </span>
-            {atrasado && (
-              <span className="animate-pulse rounded-full bg-red-600 px-2 py-1 text-[9px] font-extrabold text-white">
-                ⏰ Atrasado
+            {urgencia && (
+              <span
+                className={
+                  "rounded-full px-2 py-1 text-[9px] font-extrabold " +
+                  urgencia.badge +
+                  (urgencia.pulsante ? " animate-pulse" : "")
+                }
+              >
+                ⏰ {urgencia.label}
               </span>
             )}
           </div>

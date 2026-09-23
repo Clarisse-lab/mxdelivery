@@ -10,7 +10,7 @@ import {
   formatarMoeda,
 } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
-import { estaAtrasado } from "@/lib/utils/atraso";
+import { calcularNivelUrgencia, URGENCIA_UI } from "@/lib/utils/atraso";
 import type { Pedido, Receita, Pagamento } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +39,7 @@ export default async function EntregaDetalhePage({
   const naFila = p.motoboy_id === null && p.status === "pendente";
 
   const banner = definirBanner(p.status, ehMinha, naFila);
+  const urgencia = URGENCIA_UI[calcularNivelUrgencia(p)];
 
   return (
     <div className="space-y-5 pb-32">
@@ -61,9 +62,15 @@ export default async function EntregaDetalhePage({
               Pedido #{p.numero}
             </p>
             <p className="mt-1 text-xl font-black tracking-[-0.03em]">{banner.texto}</p>
-            {estaAtrasado(p) && (
-              <span className="mt-2 inline-flex animate-pulse rounded-full bg-red-600 px-3 py-1 text-[10px] font-black text-white">
-                ⏰ Atrasado — já passou de 2h
+            {urgencia && (
+              <span
+                className={
+                  "mt-2 inline-flex rounded-full px-3 py-1 text-[10px] font-black " +
+                  urgencia.badge +
+                  (urgencia.pulsante ? " animate-pulse" : "")
+                }
+              >
+                ⏰ {urgencia.label}
               </span>
             )}
           </div>

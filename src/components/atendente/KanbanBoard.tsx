@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import type { Pedido, Perfil, StatusPedido } from "@/lib/types/database";
 import PedidoCard from "./PedidoCard";
 import { useAgora } from "@/lib/hooks/useAgora";
-import { estaAtrasado } from "@/lib/utils/atraso";
+import { calcularNivelUrgencia, estaAtrasado, type NivelUrgencia } from "@/lib/utils/atraso";
 import { useAlertaAtraso } from "@/lib/hooks/useAlertaAtraso";
+
+const PESO_URGENCIA: Record<NivelUrgencia, number> = { atrasado: 3, quase: 2, atencao: 1, normal: 0 };
 
 const COLUNAS: { status: StatusPedido; titulo: string; detalhe: string }[] = [
   { status: "pendente", titulo: "Pendentes", detalhe: "Aguardando saída" },
@@ -67,7 +69,10 @@ export default function KanbanBoard({
         }
         return true;
       })
-      .sort((a, b) => Number(estaAtrasado(b, agora)) - Number(estaAtrasado(a, agora))),
+      .sort(
+        (a, b) =>
+          PESO_URGENCIA[calcularNivelUrgencia(b, agora)] - PESO_URGENCIA[calcularNivelUrgencia(a, agora)],
+      ),
   }));
 
   return (
@@ -159,7 +164,7 @@ export default function KanbanBoard({
                 key={pedido.id}
                 pedido={pedido}
                 motoboy={pedido.motoboy_id ? motoboysPorId.get(pedido.motoboy_id) : undefined}
-                atrasado={estaAtrasado(pedido, agora)}
+                nivelUrgencia={calcularNivelUrgencia(pedido, agora)}
               />
             ))}
           </div>
@@ -193,7 +198,7 @@ export default function KanbanBoard({
                     key={pedido.id}
                     pedido={pedido}
                     motoboy={pedido.motoboy_id ? motoboysPorId.get(pedido.motoboy_id) : undefined}
-                    atrasado={estaAtrasado(pedido, agora)}
+                    nivelUrgencia={calcularNivelUrgencia(pedido, agora)}
                   />
                 ))}
                 {coluna.pedidos.length === 0 && (
