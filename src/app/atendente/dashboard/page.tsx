@@ -29,6 +29,7 @@ export default async function DashboardPage() {
       pedidosIniciais={(pedidos as Pedido[]) ?? []}
       motoboys={(motoboys as Perfil[]) ?? []}
       perfilId={perfilAtual.id}
+      perfilNome={perfilAtual.nome}
       papel={perfilAtual.papel}
     />
   );

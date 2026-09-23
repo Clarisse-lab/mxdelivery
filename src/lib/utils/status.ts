@@ -1,4 +1,10 @@
-import type { StatusPedido, FormaPagamento, TipoReceita, Pagamento } from "@/lib/types/database";
+import type { StatusPedido, FormaPagamento, TipoReceita, Pagamento, Papel } from "@/lib/types/database";
+
+export const PAPEL_LABEL: Record<Papel, string> = {
+  admin: "Admin",
+  atendente: "Atendente",
+  motoboy: "Entregador",
+};
 
 export const STATUS_LABEL: Record<StatusPedido, string> = {
   pendente: "Pendente",

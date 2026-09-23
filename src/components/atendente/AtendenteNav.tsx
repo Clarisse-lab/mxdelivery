@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import LogoMaxiPopular from "@/components/LogoMaxiPopular";
+import { PAPEL_LABEL } from "@/lib/utils/status";
 import type { Papel } from "@/lib/types/database";
 
 type IconName = "dashboard" | "plus" | "users" | "bike";
@@ -80,9 +81,12 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
     <>
       <aside className="brand-grid hidden h-screen flex-col overflow-hidden bg-brand-navy-dark text-white lg:sticky lg:top-0 lg:flex">
         <div className="border-b border-white/10 px-6 pb-6 pt-7">
-          <div className="rounded-2xl bg-brand-gold px-4 py-5 shadow-[0_18px_45px_rgba(0,0,0,.18)]">
+          <Link
+            href="/atendente/dashboard"
+            className="block rounded-2xl bg-brand-gold px-4 py-5 shadow-[0_18px_45px_rgba(0,0,0,.18)] transition-opacity hover:opacity-90"
+          >
             <LogoMaxiPopular />
-          </div>
+          </Link>
           <div className="mt-5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-brand-gold">
               MX Delivery
@@ -122,7 +126,7 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{nome}</p>
-              <p className="text-[11px] capitalize text-white/45">{papel}</p>
+              <p className="text-[11px] text-white/45">{PAPEL_LABEL[papel]}</p>
             </div>
           </div>
           <button
@@ -136,13 +140,21 @@ export default function AtendenteNav({ nome, papel }: { nome: string; papel: Pap
 
       <header className="sticky top-0 z-40 border-b border-brand-navy/10 bg-brand-gold px-4 py-3 shadow-sm lg:hidden">
         <div className="flex items-center justify-between gap-3">
-          <LogoMaxiPopular />
-          <button
-            onClick={sair}
-            className="rounded-full border border-brand-navy/15 bg-white/70 px-3 py-1.5 text-xs font-bold text-brand-navy"
-          >
-            Sair
-          </button>
+          <Link href="/atendente/dashboard">
+            <LogoMaxiPopular />
+          </Link>
+          <div className="flex items-center gap-2.5">
+            <div className="text-right">
+              <p className="text-xs font-extrabold text-brand-navy-dark">{nome}</p>
+              <p className="text-[10px] font-bold text-brand-navy/50">{PAPEL_LABEL[papel]}</p>
+            </div>
+            <button
+              onClick={sair}
+              className="rounded-full border border-brand-navy/15 bg-white/70 px-3 py-1.5 text-xs font-bold text-brand-navy"
+            >
+              Sair
+            </button>
+          </div>
         </div>
         <nav className="mt-3 flex gap-2 overflow-x-auto pb-0.5">
           {links.map((link) => {

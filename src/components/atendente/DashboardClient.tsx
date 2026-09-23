@@ -5,17 +5,20 @@ import { usePedidosRealtime } from "@/lib/hooks/usePedidosRealtime";
 import KanbanBoard from "./KanbanBoard";
 import ResumoDia from "@/components/ResumoDia";
 import AlertaNotificacoes from "@/components/AlertaNotificacoes";
+import { PAPEL_LABEL } from "@/lib/utils/status";
 import type { Papel, Pedido, Perfil } from "@/lib/types/database";
 
 export default function DashboardClient({
   pedidosIniciais,
   motoboys,
   perfilId,
+  perfilNome,
   papel,
 }: {
   pedidosIniciais: Pedido[];
   motoboys: Perfil[];
   perfilId: string;
+  perfilNome: string;
   papel: Papel;
 }) {
   const pedidos = usePedidosRealtime(pedidosIniciais);
@@ -28,6 +31,14 @@ export default function DashboardClient({
       <section className="relative overflow-hidden rounded-[28px] bg-brand-gold px-5 py-6 shadow-[0_18px_42px_rgba(205,160,0,.12)] sm:px-7 lg:flex lg:items-end lg:justify-between lg:px-8 lg:py-7">
         <div className="absolute -right-12 -top-24 h-64 w-64 rounded-full border-[42px] border-white/20" />
         <div className="relative z-10">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/60 px-3 py-1.5 backdrop-blur-sm">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-navy text-[9px] font-black text-white">
+              {perfilNome.charAt(0).toUpperCase()}
+            </span>
+            <p className="text-xs font-extrabold text-brand-navy-dark">
+              {perfilNome} <span className="font-semibold text-brand-navy/55">· {PAPEL_LABEL[papel]}</span>
+            </p>
+          </div>
           <p className="text-[10px] font-black uppercase tracking-[0.26em] text-brand-red">Central operacional</p>
           <h1 className="mt-2 text-2xl font-black tracking-[-0.045em] text-brand-navy-dark sm:text-3xl">
             Visão geral das entregas

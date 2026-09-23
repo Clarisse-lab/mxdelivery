@@ -32,11 +32,13 @@ export default function MotoboyHeader({ nome }: { nome: string }) {
     <header className="sticky top-0 z-40 overflow-hidden border-b border-brand-navy/10 bg-brand-gold shadow-[0_8px_28px_rgba(13,49,94,.09)]">
       <div className="mx-auto max-w-2xl px-4 pb-3 pt-3.5">
         <div className="flex items-center justify-between gap-3">
-          <LogoMaxiPopular />
+          <Link href="/motoboy/entregas">
+            <LogoMaxiPopular />
+          </Link>
           <div className="flex items-center gap-2.5">
             <div className="hidden text-right sm:block">
               <p className="text-xs font-extrabold text-brand-navy-dark">{nome}</p>
-              <p className="text-[10px] font-bold text-emerald-700">● Online</p>
+              <p className="text-[10px] font-bold text-brand-navy/50">Entregador · <span className="text-emerald-700">● Online</span></p>
             </div>
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-navy text-[11px] font-black text-white">
               {iniciais || "MX"}
