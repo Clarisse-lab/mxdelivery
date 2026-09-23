@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getPerfilAtual } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import DashboardClient from "@/components/atendente/DashboardClient";
+import { hojeLocalISO } from "@/lib/utils/dataLocal";
 import type { Pedido, Perfil } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function DashboardPage() {
       perfilId={perfilAtual.id}
       perfilNome={perfilAtual.nome}
       papel={perfilAtual.papel}
+      hoje={hojeLocalISO()}
     />
   );
 }

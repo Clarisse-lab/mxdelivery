@@ -5,6 +5,7 @@ import { usePedidosRealtime } from "@/lib/hooks/usePedidosRealtime";
 import KanbanBoard from "./KanbanBoard";
 import ResumoDia from "@/components/ResumoDia";
 import AlertaNotificacoes from "@/components/AlertaNotificacoes";
+import ExportarRelatorio from "./ExportarRelatorio";
 import { PAPEL_LABEL } from "@/lib/utils/status";
 import type { Papel, Pedido, Perfil } from "@/lib/types/database";
 
@@ -14,12 +15,14 @@ export default function DashboardClient({
   perfilId,
   perfilNome,
   papel,
+  hoje,
 }: {
   pedidosIniciais: Pedido[];
   motoboys: Perfil[];
   perfilId: string;
   perfilNome: string;
   papel: Papel;
+  hoje: string;
 }) {
   const pedidos = usePedidosRealtime(pedidosIniciais);
   const pedidosDoResumo = papel === "admin" ? pedidos : pedidos.filter((p) => p.criado_por === perfilId);
@@ -60,6 +63,8 @@ export default function DashboardClient({
         pedidos={pedidosDoResumo}
         titulo={papel === "admin" ? "Resumo da farmácia hoje" : "Meu resumo de hoje"}
       />
+
+      <ExportarRelatorio hoje={hoje} />
 
       <KanbanBoard pedidos={pedidos} motoboys={motoboys} />
     </div>
