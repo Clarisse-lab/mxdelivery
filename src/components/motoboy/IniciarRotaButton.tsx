@@ -20,10 +20,16 @@ export default function IniciarRotaButton({
 
   function iniciar() {
     setErro(null);
+
+    // Precisa abrir o Maps de forma síncrona, direto no clique — depois
+    // de um await, o navegador (principalmente no celular) já não trata
+    // mais como uma ação do usuário e bloqueia o window.open() sem
+    // avisar nada na tela.
+    window.open(linkGoogleMaps(endereco, bairro), "_blank", "noopener,noreferrer");
+
     startTransition(async () => {
       try {
         await iniciarRota(pedidoId);
-        window.open(linkGoogleMaps(endereco, bairro), "_blank");
         router.refresh();
       } catch (e) {
         setErro(e instanceof Error ? e.message : "Erro ao iniciar rota.");
