@@ -11,6 +11,7 @@ import {
 } from "@/lib/utils/status";
 import { formatarData } from "@/lib/utils/tempo";
 import { calcularTroco } from "@/lib/utils/troco";
+import { estaAtrasado } from "@/lib/utils/atraso";
 import type { Pedido, Perfil, Receita, Pagamento } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
@@ -78,6 +79,11 @@ export default async function PedidoDetalhePage({
               <span className={"rounded-full px-3 py-1 text-[11px] font-extrabold " + STATUS_BADGE_CLASS[p.status]}>
                 {STATUS_LABEL[p.status]}
               </span>
+              {estaAtrasado(p) && (
+                <span className="animate-pulse rounded-full bg-red-600 px-3 py-1 text-[11px] font-extrabold text-white">
+                  ⏰ Atrasado
+                </span>
+              )}
             </div>
             <p className="mt-3 text-sm font-semibold text-brand-navy/60">Bairro</p>
             <p className="text-xl font-black tracking-[-0.025em] text-brand-navy-dark">{p.bairro}</p>

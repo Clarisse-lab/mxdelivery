@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState, type WheelEvent } from "react";
+import { useActionState, useEffect, useRef, useState, type WheelEvent } from "react";
 import { criarPedido, type EstadoFormPedido } from "@/app/atendente/pedidos/novo/actions";
+import { buscarClientes, type ClienteSugestao } from "@/app/atendente/pedidos/novo/clientes";
 import SubmitButton from "@/components/ui/SubmitButton";
 import ComboboxTexto from "@/components/ui/ComboboxTexto";
 import {
@@ -55,6 +56,52 @@ export default function NovoPedidoForm() {
   const [receitas, setReceitas] = useState<NovaReceita[]>([
     { tipo_receita: "comum", quantidade: 1 },
   ]);
+
+  const [clienteNome, setClienteNome] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [endereco, setEndereco] = useState("");
+  const [referencia, setReferencia] = useState("");
+  const [bairroSelecionado, setBairroSelecionado] = useState("");
+  const [sugestoesClientes, setSugestoesClientes] = useState<ClienteSugestao[]>([]);
+  const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
+  const clienteContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function aoClicarFora(e: MouseEvent) {
+      if (clienteContainerRef.current && !clienteContainerRef.current.contains(e.target as Node)) {
+        setMostrarSugestoes(false);
+      }
+    }
+    document.addEventListener("mousedown", aoClicarFora);
+    return () => document.removeEventListener("mousedown", aoClicarFora);
+  }, []);
+
+  useEffect(() => {
+    if (clienteNome.trim().length < 2) return;
+    let cancelado = false;
+    const timer = setTimeout(() => {
+      buscarClientes(clienteNome).then((resultado) => {
+        if (!cancelado) setSugestoesClientes(resultado);
+      });
+    }, 300);
+    return () => {
+      cancelado = true;
+      clearTimeout(timer);
+    };
+  }, [clienteNome]);
+
+  // Some pra não exibir sugestões desatualizadas de uma busca anterior
+  // enquanto o campo está vazio ou curto demais pra buscar de novo.
+  const sugestoesExibidas = clienteNome.trim().length < 2 ? [] : sugestoesClientes;
+
+  function selecionarCliente(sugestao: ClienteSugestao) {
+    setClienteNome(sugestao.cliente_nome);
+    setTelefone(sugestao.cliente_telefone ?? "");
+    setEndereco(sugestao.endereco);
+    setReferencia(sugestao.referencia ?? "");
+    setBairroSelecionado(sugestao.bairro ?? "");
+    setMostrarSugestoes(false);
+  }
 
   const dividido = pagamentos.length > 1;
   const somaPagamentos = dividido
@@ -111,7 +158,41 @@ export default function NovoPedidoForm() {
         />
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <Campo label="Cliente" htmlFor="cliente_nome">
-          <input id="cliente_nome" name="cliente_nome" required className={inputClass} />
+          <div ref={clienteContainerRef} className="relative">
+            <input
+              id="cliente_nome"
+              name="cliente_nome"
+              required
+              autoComplete="off"
+              value={clienteNome}
+              onChange={(e) => {
+                setClienteNome(e.target.value);
+                setMostrarSugestoes(true);
+              }}
+              onFocus={() => setMostrarSugestoes(true)}
+              className={inputClass}
+            />
+            {mostrarSugestoes && sugestoesExibidas.length > 0 && (
+              <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+                {sugestoesExibidas.map((sugestao, index) => (
+                  <li key={index}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => selecionarCliente(sugestao)}
+                      className="block w-full px-4 py-2 text-left hover:bg-slate-50"
+                    >
+                      <p className="text-sm font-bold text-brand-navy-dark">{sugestao.cliente_nome}</p>
+                      <p className="truncate text-xs text-slate-400">
+                        {sugestao.endereco}
+                        {sugestao.bairro ? " · " + sugestao.bairro : ""}
+                      </p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </Campo>
 
         <Campo label="Telefone" htmlFor="cliente_telefone">
@@ -120,26 +201,43 @@ export default function NovoPedidoForm() {
             name="cliente_telefone"
             type="tel"
             placeholder="(33) 99999-9999"
+            value={telefone}
+            onChange={(e) => setTelefone(e.target.value)}
             className={inputClass}
           />
         </Campo>
 
         <Campo label="Endereço" htmlFor="endereco" className="sm:col-span-2">
-          <input id="endereco" name="endereco" required className={inputClass} />
+          <input
+            id="endereco"
+            name="endereco"
+            required
+            value={endereco}
+            onChange={(e) => setEndereco(e.target.value)}
+            className={inputClass}
+          />
         </Campo>
 
         <Campo label="Bairro" htmlFor="bairro">
           <ComboboxTexto
+            key={bairroSelecionado}
             id="bairro"
             name="bairro"
             opcoes={BAIRROS_GOVERNADOR_VALADARES}
             required
+            defaultValue={bairroSelecionado}
             className={inputClass}
           />
         </Campo>
 
         <Campo label="Ponto de referência" htmlFor="referencia">
-          <input id="referencia" name="referencia" className={inputClass} />
+          <input
+            id="referencia"
+            name="referencia"
+            value={referencia}
+            onChange={(e) => setReferencia(e.target.value)}
+            className={inputClass}
+          />
         </Campo>
 
         <Campo label="Valor total (R$)" htmlFor="valor_total">

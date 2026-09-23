@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePedidosRealtime } from "@/lib/hooks/usePedidosRealtime";
 import KanbanBoard from "./KanbanBoard";
 import ResumoDia from "@/components/ResumoDia";
+import AlertaNotificacoes from "@/components/AlertaNotificacoes";
 import type { Papel, Pedido, Perfil } from "@/lib/types/database";
 
 export default function DashboardClient({
@@ -22,6 +23,8 @@ export default function DashboardClient({
 
   return (
     <div className="space-y-6">
+      <AlertaNotificacoes mensagem="Ative alertas sonoros pra saber na hora quando um pedido passar de 2h sem ser entregue." />
+
       <section className="relative overflow-hidden rounded-[28px] bg-brand-gold px-5 py-6 shadow-[0_18px_42px_rgba(205,160,0,.12)] sm:px-7 lg:flex lg:items-end lg:justify-between lg:px-8 lg:py-7">
         <div className="absolute -right-12 -top-24 h-64 w-64 rounded-full border-[42px] border-white/20" />
         <div className="relative z-10">

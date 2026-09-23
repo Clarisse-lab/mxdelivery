@@ -10,6 +10,7 @@ import {
   formatarMoeda,
 } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
+import { estaAtrasado } from "@/lib/utils/atraso";
 import type { Pedido, Receita, Pagamento } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +61,11 @@ export default async function EntregaDetalhePage({
               Pedido #{p.numero}
             </p>
             <p className="mt-1 text-xl font-black tracking-[-0.03em]">{banner.texto}</p>
+            {estaAtrasado(p) && (
+              <span className="mt-2 inline-flex animate-pulse rounded-full bg-red-600 px-3 py-1 text-[10px] font-black text-white">
+                ⏰ Atrasado — já passou de 2h
+              </span>
+            )}
           </div>
           <div className="rounded-2xl bg-white/15 px-3 py-2 text-right backdrop-blur-sm">
             <p className="text-[9px] font-black uppercase tracking-[0.12em] opacity-60">Valor</p>

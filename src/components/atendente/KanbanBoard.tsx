@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import type { Pedido, Perfil, StatusPedido } from "@/lib/types/database";
 import PedidoCard from "./PedidoCard";
+import { useAgora } from "@/lib/hooks/useAgora";
+import { estaAtrasado } from "@/lib/utils/atraso";
+import { useAlertaAtraso } from "@/lib/hooks/useAlertaAtraso";
 
 const COLUNAS: { status: StatusPedido; titulo: string; detalhe: string }[] = [
   { status: "pendente", titulo: "Pendentes", detalhe: "Aguardando saída" },
@@ -25,6 +28,9 @@ export default function KanbanBoard({
 }) {
   const [busca, setBusca] = useState("");
   const [motoboyFiltro, setMotoboyFiltro] = useState("");
+  const agora = useAgora();
+
+  useAlertaAtraso(pedidos);
 
   const motoboysPorId = useMemo(
     () => new Map(motoboys.map((m) => [m.id, m])),
@@ -49,16 +55,19 @@ export default function KanbanBoard({
 
   const hoje = new Date().toDateString();
   const problemas = pedidosFiltrados.filter((p) => p.status === "problema");
+  const totalAtrasados = pedidosFiltrados.filter((p) => estaAtrasado(p, agora)).length;
 
   const colunas = COLUNAS.map((coluna) => ({
     ...coluna,
-    pedidos: pedidosFiltrados.filter((p) => {
-      if (p.status !== coluna.status) return false;
-      if (coluna.status === "entregue") {
-        return p.entregue_em && new Date(p.entregue_em).toDateString() === hoje;
-      }
-      return true;
-    }),
+    pedidos: pedidosFiltrados
+      .filter((p) => {
+        if (p.status !== coluna.status) return false;
+        if (coluna.status === "entregue") {
+          return p.entregue_em && new Date(p.entregue_em).toDateString() === hoje;
+        }
+        return true;
+      })
+      .sort((a, b) => Number(estaAtrasado(b, agora)) - Number(estaAtrasado(a, agora))),
   }));
 
   return (
@@ -68,9 +77,16 @@ export default function KanbanBoard({
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold-dark">Operação</p>
           <h2 className="mt-1 text-xl font-black tracking-[-0.035em] text-brand-navy-dark">Fluxo de pedidos</h2>
         </div>
-        <p className="text-xs font-medium text-slate-400">
-          {pedidosFiltrados.length} {pedidosFiltrados.length === 1 ? "pedido" : "pedidos"} no painel
-        </p>
+        <div className="flex items-center gap-2">
+          {totalAtrasados > 0 && (
+            <span className="animate-pulse rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-black text-white">
+              ⏰ {totalAtrasados} atrasado{totalAtrasados === 1 ? "" : "s"}
+            </span>
+          )}
+          <p className="text-xs font-medium text-slate-400">
+            {pedidosFiltrados.length} {pedidosFiltrados.length === 1 ? "pedido" : "pedidos"} no painel
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2.5 rounded-[18px] border border-slate-200/80 bg-white p-3 shadow-[0_2px_9px_rgba(7,31,61,.045)]">
@@ -143,6 +159,7 @@ export default function KanbanBoard({
                 key={pedido.id}
                 pedido={pedido}
                 motoboy={pedido.motoboy_id ? motoboysPorId.get(pedido.motoboy_id) : undefined}
+                atrasado={estaAtrasado(pedido, agora)}
               />
             ))}
           </div>
@@ -176,6 +193,7 @@ export default function KanbanBoard({
                     key={pedido.id}
                     pedido={pedido}
                     motoboy={pedido.motoboy_id ? motoboysPorId.get(pedido.motoboy_id) : undefined}
+                    atrasado={estaAtrasado(pedido, agora)}
                   />
                 ))}
                 {coluna.pedidos.length === 0 && (

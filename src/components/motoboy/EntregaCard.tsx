@@ -14,14 +14,21 @@ const UI: Record<Pedido["status"], { bar: string; badge: string }> = {
 export default function EntregaCard({
   pedido,
   acao,
+  atrasado = false,
 }: {
   pedido: Pedido;
   acao?: React.ReactNode;
+  atrasado?: boolean;
 }) {
   const ui = UI[pedido.status];
 
   return (
-    <article className="relative overflow-hidden rounded-[22px] border border-slate-200/80 bg-white p-4 shadow-[0_8px_28px_rgba(7,31,61,.055)]">
+    <article
+      className={
+        "relative overflow-hidden rounded-[22px] border bg-white p-4 shadow-[0_8px_28px_rgba(7,31,61,.055)] " +
+        (atrasado ? "border-red-300" : "border-slate-200/80")
+      }
+    >
       <span className={"absolute inset-y-0 left-0 w-1 " + ui.bar} />
       <Link href={"/motoboy/entregas/" + pedido.id} className="block">
         <div className="flex items-start justify-between gap-3">
@@ -29,9 +36,16 @@ export default function EntregaCard({
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-350">Pedido</p>
             <span className="mt-0.5 block text-base font-black text-brand-navy-dark">#{pedido.numero}</span>
           </div>
-          <span className={"rounded-full px-2.5 py-1 text-[10px] font-extrabold " + ui.badge}>
-            {STATUS_LABEL[pedido.status]}
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span className={"rounded-full px-2.5 py-1 text-[10px] font-extrabold " + ui.badge}>
+              {STATUS_LABEL[pedido.status]}
+            </span>
+            {atrasado && (
+              <span className="animate-pulse rounded-full bg-red-600 px-2 py-1 text-[9px] font-extrabold text-white">
+                ⏰ Atrasado
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="mt-3 rounded-2xl bg-slate-50 px-3.5 py-3">

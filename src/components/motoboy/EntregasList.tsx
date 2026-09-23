@@ -3,9 +3,14 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { usePedidosRealtime } from "@/lib/hooks/usePedidosRealtime";
+import { useAgora } from "@/lib/hooks/useAgora";
+import { useAlertaAtraso } from "@/lib/hooks/useAlertaAtraso";
+import { useAlertaNovoPedido } from "@/lib/hooks/useAlertaNovoPedido";
+import { estaAtrasado } from "@/lib/utils/atraso";
 import { pegarPedido } from "@/app/motoboy/entregas/actions";
 import type { Pedido } from "@/lib/types/database";
 import EntregaCard from "./EntregaCard";
+import AlertaNotificacoes from "@/components/AlertaNotificacoes";
 
 export default function EntregasList({
   pedidosIniciais,
@@ -18,6 +23,7 @@ export default function EntregasList({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [erro, setErro] = useState<string | null>(null);
+  const agora = useAgora();
 
   const minhas = pedidos
     .filter((p) => p.motoboy_id === motoboyId)
@@ -29,6 +35,9 @@ export default function EntregasList({
   const fila = pedidos
     .filter((p) => p.motoboy_id === null)
     .sort((a, b) => new Date(a.criado_em).getTime() - new Date(b.criado_em).getTime());
+
+  useAlertaAtraso(minhas);
+  useAlertaNovoPedido(fila);
 
   const emRota = minhas.filter((p) => p.status === "em_rota").length;
   const aguardando = minhas.filter((p) => p.status === "pendente").length;
@@ -48,6 +57,8 @@ export default function EntregasList({
 
   return (
     <div className="space-y-6">
+      <AlertaNotificacoes mensagem="Ative alertas sonoros pra ser avisado de pedido atrasado e de pedido novo na fila." />
+
       <section className="relative overflow-hidden rounded-[26px] bg-brand-navy px-5 py-5 text-white shadow-[0_18px_40px_rgba(11,49,95,.16)]">
         <div className="absolute -right-14 -top-20 h-44 w-44 rounded-full border-[30px] border-brand-gold/20" />
         <div className="relative z-10">
@@ -80,7 +91,7 @@ export default function EntregasList({
 
         <div className="space-y-3">
           {minhas.map((pedido) => (
-            <EntregaCard key={pedido.id} pedido={pedido} />
+            <EntregaCard key={pedido.id} pedido={pedido} atrasado={estaAtrasado(pedido, agora)} />
           ))}
         </div>
       </section>

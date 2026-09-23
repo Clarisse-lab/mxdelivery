@@ -15,16 +15,21 @@ const STATUS: Record<Pedido["status"], { bar: string; badge: string; label: stri
 export default function PedidoCard({
   pedido,
   motoboy,
+  atrasado = false,
 }: {
   pedido: Pedido;
   motoboy?: Perfil;
+  atrasado?: boolean;
 }) {
   const status = STATUS[pedido.status];
 
   return (
     <Link
       href={"/atendente/pedidos/" + pedido.id}
-      className="group relative block overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-[0_2px_9px_rgba(7,31,61,.045)] hover:-translate-y-0.5 hover:border-brand-navy/15 hover:shadow-[0_12px_28px_rgba(7,31,61,.08)]"
+      className={
+        "group relative block overflow-hidden rounded-2xl border bg-white p-4 shadow-[0_2px_9px_rgba(7,31,61,.045)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(7,31,61,.08)] " +
+        (atrasado ? "border-red-300 hover:border-red-400" : "border-slate-200/80 hover:border-brand-navy/15")
+      }
     >
       <span className={"absolute inset-y-0 left-0 w-1 " + status.bar} />
 
@@ -33,9 +38,16 @@ export default function PedidoCard({
           <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-350">Pedido</span>
           <p className="mt-0.5 text-sm font-black text-brand-navy-dark">#{pedido.numero}</p>
         </div>
-        <span className={"rounded-full px-2 py-1 text-[9px] font-extrabold " + status.badge}>
-          {status.label}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className={"rounded-full px-2 py-1 text-[9px] font-extrabold " + status.badge}>
+            {status.label}
+          </span>
+          {atrasado && (
+            <span className="animate-pulse rounded-full bg-red-600 px-2 py-1 text-[9px] font-extrabold text-white">
+              ⏰ Atrasado
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="mt-3">
