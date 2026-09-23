@@ -101,8 +101,14 @@ export default function NovoPedidoForm() {
   }));
 
   return (
-    <form action={formAction} className="max-w-xl space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2">
+    <form action={formAction} className="max-w-4xl space-y-6">
+      <section className="premium-panel rounded-[26px] p-5 sm:p-6">
+        <SectionHeading
+          eyebrow="Dados da entrega"
+          titulo="Informações do cliente"
+          descricao="Preencha os dados principais do pedido e do endereço de entrega."
+        />
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <Campo label="Cliente" htmlFor="cliente_nome" className="sm:col-span-2">
           <input id="cliente_nome" name="cliente_nome" required className={inputClass} />
         </Campo>
@@ -144,13 +150,18 @@ export default function NovoPedidoForm() {
             className={inputClass}
           />
         </Campo>
-      </div>
+        </div>
+      </section>
 
-      <div className="space-y-3 rounded-lg border border-slate-200 p-3">
-        <p className="text-sm font-medium text-slate-700">Forma de pagamento</p>
+      <section className="premium-panel space-y-4 rounded-[26px] p-5 sm:p-6">
+        <SectionHeading
+          eyebrow="Cobrança"
+          titulo="Forma de pagamento"
+          descricao="Defina como o cliente fará o pagamento e, se necessário, divida o valor."
+        />
 
         {pagamentos.map((linha, index) => (
-          <div key={index} className="space-y-2 rounded-md border border-slate-100 bg-slate-50 p-2.5">
+          <div key={index} className="space-y-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
             <div className="flex items-center gap-2">
               <select
                 value={linha.forma_pagamento}
@@ -183,7 +194,7 @@ export default function NovoPedidoForm() {
                 <button
                   type="button"
                   onClick={() => removerLinha(index)}
-                  className="shrink-0 text-sm font-medium text-red-600"
+                  className="shrink-0 rounded-lg px-2 py-1 text-xs font-extrabold text-red-600 hover:bg-red-50"
                 >
                   Remover
                 </button>
@@ -198,7 +209,7 @@ export default function NovoPedidoForm() {
                       type="radio"
                       checked={linha.cartaoTipo === "credito"}
                       onChange={() => atualizarLinha(index, { cartaoTipo: "credito" })}
-                      className="h-4 w-4"
+                      className="h-5 w-5 accent-brand-navy"
                     />
                     Crédito
                   </label>
@@ -314,9 +325,10 @@ export default function NovoPedidoForm() {
         <button
           type="button"
           onClick={adicionarLinha}
-          className="text-sm font-medium text-emerald-700"
+          className="inline-flex items-center gap-2 rounded-xl border border-brand-navy/10 bg-brand-navy/[0.04] px-3 py-2 text-sm font-extrabold text-brand-navy hover:bg-brand-navy/[0.08]"
         >
-          + Dividir em outra forma de pagamento
+          <span className="text-base leading-none">+</span>
+          Dividir em outra forma de pagamento
         </button>
 
         {dividido && (
@@ -334,10 +346,15 @@ export default function NovoPedidoForm() {
         )}
 
         <input type="hidden" name="pagamentos" value={JSON.stringify(pagamentosParaEnviar)} />
-      </div>
+      </section>
 
-      <div className="space-y-3 rounded-lg border border-slate-200 p-3">
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+      <section className="premium-panel space-y-4 rounded-[26px] p-5 sm:p-6">
+        <SectionHeading
+          eyebrow="Conferência"
+          titulo="Receitas e observações"
+          descricao="Sinalize exigências do pedido para evitar falhas na entrega."
+        />
+        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-sm font-bold text-brand-navy-dark">
           <input
             type="checkbox"
             name="precisa_receita"
@@ -375,7 +392,7 @@ export default function NovoPedidoForm() {
                   <button
                     type="button"
                     onClick={() => removerReceita(index)}
-                    className="text-sm font-medium text-red-600"
+                    className="rounded-lg px-2 py-1 text-xs font-extrabold text-red-600 hover:bg-red-50"
                   >
                     Remover
                   </button>
@@ -385,24 +402,35 @@ export default function NovoPedidoForm() {
             <button
               type="button"
               onClick={adicionarReceita}
-              className="text-sm font-medium text-emerald-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-brand-navy/10 bg-brand-navy/[0.04] px-3 py-2 text-sm font-extrabold text-brand-navy"
             >
               + Adicionar outra receita
             </button>
             <input type="hidden" name="receitas" value={JSON.stringify(receitas)} />
           </div>
         )}
-      </div>
+        <div className="pt-1">
+          <Campo label="Observações (cliente/endereço)" htmlFor="observacoes">
+            <textarea
+              id="observacoes"
+              name="observacoes"
+              rows={4}
+              placeholder="Ex.: interfone, portaria, instruções especiais..."
+              className={inputClass}
+            />
+          </Campo>
+        </div>
+      </section>
 
-      <Campo label="Observações (cliente/endereço)" htmlFor="observacoes">
-        <textarea id="observacoes" name="observacoes" rows={3} className={inputClass} />
-      </Campo>
-
-      {estado.erro && <p className="text-sm text-red-600">{estado.erro}</p>}
+      {estado.erro && (
+        <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {estado.erro}
+        </p>
+      )}
 
       <SubmitButton
         pendingLabel="Criando..."
-        className="w-full rounded-lg bg-emerald-600 py-2.5 font-medium text-white disabled:opacity-60 sm:w-auto sm:px-8"
+        className="w-full rounded-xl bg-brand-navy px-8 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(11,49,95,.18)] hover:-translate-y-0.5 hover:bg-brand-navy-dark disabled:translate-y-0 disabled:opacity-60 sm:w-auto"
       >
         Criar pedido
       </SubmitButton>
@@ -411,7 +439,7 @@ export default function NovoPedidoForm() {
 }
 
 const inputClass =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-base outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500";
+  "premium-input w-full rounded-xl px-4 py-3.5 text-[15px] font-medium text-slate-900 placeholder:text-slate-400";
 
 function Campo({
   label,
@@ -425,11 +453,33 @@ function Campo({
   className?: string;
 }) {
   return (
-    <div className={`space-y-1 ${className ?? ""}`}>
-      <label htmlFor={htmlFor} className="text-sm font-medium text-slate-700">
+    <div className={`space-y-2 ${className ?? ""}`}>
+      <label
+        htmlFor={htmlFor}
+        className="block text-[11px] font-black uppercase tracking-[0.11em] text-brand-navy/60"
+      >
         {label}
       </label>
       {children}
+    </div>
+  );
+}
+
+
+function SectionHeading({
+  eyebrow,
+  titulo,
+  descricao,
+}: {
+  eyebrow: string;
+  titulo: string;
+  descricao: string;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold-dark">{eyebrow}</p>
+      <h2 className="mt-1 text-lg font-black tracking-[-0.025em] text-brand-navy-dark">{titulo}</h2>
+      <p className="mt-1 text-sm leading-6 text-slate-500">{descricao}</p>
     </div>
   );
 }

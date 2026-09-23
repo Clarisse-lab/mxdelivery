@@ -81,106 +81,150 @@ export default function ChecklistFinalizar({
 
   if (mostrarProblema) {
     return (
-      <div className="space-y-3 rounded-xl border border-red-200 bg-red-50 p-4">
-        <label htmlFor="motivo" className="text-sm font-semibold text-red-800">
-          Por que não conseguiu entregar?
-        </label>
+      <section className="space-y-4 rounded-[24px] border border-red-200 bg-red-50 p-5 shadow-sm">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.15em] text-red-400">
+            Problema na entrega
+          </p>
+          <h2 className="mt-1 text-lg font-black text-red-800">
+            Por que não conseguiu entregar?
+          </h2>
+        </div>
+
         <textarea
           id="motivo"
           value={motivo}
           onChange={(e) => setMotivo(e.target.value)}
-          rows={3}
+          rows={4}
           placeholder="Ex.: cliente não estava em casa, não conseguiu pagar, não tinha a receita..."
-          className="w-full rounded-lg border border-red-300 px-3 py-2 text-base outline-none focus:border-red-500"
+          className="w-full rounded-xl border border-red-200 bg-white px-4 py-3.5 text-[15px] font-medium outline-none focus:border-red-500 focus:ring-4 focus:ring-red-100"
         />
-        {erro && <p className="text-sm text-red-700">{erro}</p>}
-        <div className="flex gap-2">
+
+        {erro && (
+          <p className="rounded-xl bg-white px-3 py-2.5 text-sm font-semibold text-red-700">
+            {erro}
+          </p>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => setMostrarProblema(false)}
             disabled={pending}
-            className="flex-1 rounded-lg border border-slate-300 py-2.5 text-sm font-medium text-slate-700"
+            className="rounded-xl border border-slate-200 bg-white py-3 text-sm font-extrabold text-slate-700"
           >
             Voltar
           </button>
           <button
             onClick={enviarProblema}
             disabled={pending}
-            className="flex-1 rounded-lg bg-red-600 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            className="rounded-xl bg-red-600 py-3 text-sm font-extrabold text-white shadow-sm disabled:opacity-60"
           >
             Confirmar problema
           </button>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
-        {precisaReceita && (
-          <ChecklistCheckbox
-            label="Recolhi a receita"
-            checked={receitaColetada}
-            onChange={setReceitaColetada}
-          />
-        )}
-
-        {precisaTroco && (
-          <ChecklistCheckbox
-            label={`Entreguei o troco${
-              linhasComTroco.length > 0
-                ? ` (${linhasComTroco
-                    .map((pg) => formatarMoeda(calcularTroco(pg.valor, pg.troco_para) ?? 0))
-                    .join(" + ")})`
-                : ""
-            }`}
-            checked={trocoEntregue}
-            onChange={setTrocoEntregue}
-          />
-        )}
-
-        {tudoJaPago ? (
-          <p className="flex items-center gap-2 py-1 text-base text-emerald-700">
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">
-              ✓
-            </span>
-            Pagamento já confirmado
+    <div className="space-y-5">
+      <section className="premium-panel rounded-[24px] p-5">
+        <div className="mb-4">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand-gold-dark">
+            Checklist
           </p>
-        ) : (
-          <ChecklistCheckbox
-            label={
-              pendentesDeCobranca.length > 0
-                ? `Recebi o pagamento (${pendentesDeCobranca
-                    .map((pg) => `${descreverPagamento(pg)} · ${formatarMoeda(pg.valor)}`)
-                    .join(" + ")})`
-                : "Recebi o pagamento"
-            }
-            checked={pagamentoConfirmado}
-            onChange={setPagamentoConfirmado}
-          />
-        )}
-      </div>
+          <h2 className="mt-1 text-lg font-black tracking-[-0.025em] text-brand-navy-dark">
+            Confirme antes de finalizar
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Marque os itens concluídos para liberar a finalização da entrega.
+          </p>
+        </div>
 
-      <div className="space-y-1 rounded-xl border border-slate-200 bg-white p-4">
-        <label htmlFor="observacao" className="text-sm font-medium text-slate-700">
-          Observação da entrega (opcional)
+        <div className="space-y-3">
+          {precisaReceita && (
+            <ChecklistCheckbox
+              label="Recolhi a receita"
+              checked={receitaColetada}
+              onChange={setReceitaColetada}
+            />
+          )}
+
+          {precisaTroco && (
+            <ChecklistCheckbox
+              label={
+                "Entreguei o troco" +
+                (linhasComTroco.length > 0
+                  ? " (" +
+                    linhasComTroco
+                      .map((pg) => formatarMoeda(calcularTroco(pg.valor, pg.troco_para) ?? 0))
+                      .join(" + ") +
+                    ")"
+                  : "")
+              }
+              checked={trocoEntregue}
+              onChange={setTrocoEntregue}
+            />
+          )}
+
+          {tudoJaPago ? (
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3.5">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-sm font-black text-white">
+                ✓
+              </span>
+              <div>
+                <p className="text-sm font-extrabold text-emerald-800">Pagamento confirmado</p>
+                <p className="text-[11px] font-semibold text-emerald-700/70">Nada a cobrar do cliente</p>
+              </div>
+            </div>
+          ) : (
+            <ChecklistCheckbox
+              label={
+                pendentesDeCobranca.length > 0
+                  ? "Recebi o pagamento (" +
+                    pendentesDeCobranca
+                      .map((pg) => descreverPagamento(pg) + " · " + formatarMoeda(pg.valor))
+                      .join(" + ") +
+                    ")"
+                  : "Recebi o pagamento"
+              }
+              checked={pagamentoConfirmado}
+              onChange={setPagamentoConfirmado}
+            />
+          )}
+        </div>
+      </section>
+
+      <section className="premium-panel rounded-[24px] p-5">
+        <label
+          htmlFor="observacao"
+          className="block text-[10px] font-black uppercase tracking-[0.12em] text-slate-400"
+        >
+          Observação da entrega
         </label>
+        <p className="mt-1 text-sm leading-6 text-slate-500">
+          Opcional. Registre qualquer informação útil sobre a entrega.
+        </p>
         <textarea
           id="observacao"
           value={observacao}
           onChange={(e) => setObservacao(e.target.value)}
-          rows={2}
+          rows={3}
           placeholder="Alguma nota sobre essa entrega?"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          className="premium-input mt-3 w-full rounded-xl px-4 py-3.5 text-[15px] font-medium text-slate-900 placeholder:text-slate-400"
         />
-      </div>
+      </section>
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && (
+        <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {erro}
+        </p>
+      )}
 
       <button
         onClick={finalizar}
         disabled={!podeFinalizar || pending}
-        className="w-full rounded-lg bg-emerald-600 py-3 text-base font-semibold text-white disabled:opacity-40"
+        className="w-full rounded-xl bg-brand-navy py-3.5 text-base font-black text-white shadow-[0_12px_28px_rgba(11,49,95,.16)] hover:bg-brand-navy-dark disabled:opacity-40"
       >
         {pending ? "Finalizando..." : "Finalizar entrega"}
       </button>
@@ -188,7 +232,7 @@ export default function ChecklistFinalizar({
       <button
         onClick={() => setMostrarProblema(true)}
         disabled={pending}
-        className="w-full rounded-lg border border-red-300 py-2.5 text-sm font-medium text-red-700"
+        className="w-full rounded-xl border border-red-200 bg-white py-3 text-sm font-extrabold text-red-700 hover:bg-red-50"
       >
         Não consegui entregar
       </button>
@@ -206,12 +250,19 @@ function ChecklistCheckbox({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-3 py-1 text-base text-slate-800">
+    <label
+      className={
+        "flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3.5 text-[15px] font-extrabold transition " +
+        (checked
+          ? "border-emerald-100 bg-emerald-50 text-emerald-800"
+          : "border-slate-200 bg-slate-50/80 text-slate-700")
+      }
+    >
       <input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-6 w-6 shrink-0 accent-emerald-600"
+        className="h-6 w-6 shrink-0 accent-brand-navy"
       />
       {label}
     </label>
