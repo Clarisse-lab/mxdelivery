@@ -10,12 +10,14 @@ export default function ContasList({
   definirAtivo,
   excluirConvite,
   vazio = "Nenhuma conta cadastrada ainda.",
+  rotulo = "Conta",
 }: {
   contas: Perfil[];
   convitesPendentes?: Convite[];
   definirAtivo: (id: string, ativo: boolean) => Promise<void>;
   excluirConvite?: (numero: string) => Promise<void>;
   vazio?: string;
+  rotulo?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -36,70 +38,123 @@ export default function ContasList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {convitesPendentes.length > 0 && (
-        <ul className="divide-y divide-amber-200 rounded-lg border border-amber-200 bg-amber-50">
+        <div className="space-y-3">
           {convitesPendentes.map((c) => (
-            <li key={c.numero} className="flex items-center justify-between gap-3 px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-slate-900">
-                  {c.nome} <span className="text-slate-400">· nº {c.numero}</span>
-                </p>
-                <p className="text-xs text-slate-500">{c.telefone ?? "sem telefone"}</p>
+            <article
+              key={c.numero}
+              className="premium-panel flex flex-col gap-4 rounded-[22px] border-dashed p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+            >
+              <div className="flex min-w-0 items-center gap-3.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-black text-amber-800 shadow-sm">
+                  {c.numero}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="truncate text-base font-black tracking-[-0.02em] text-brand-navy-dark">
+                    {c.nome}
+                  </h3>
+                  <p className="mt-1 text-sm font-semibold text-slate-500">
+                    {c.telefone ?? "Telefone não informado"}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-medium text-amber-900">
+              <div className="flex items-center justify-between gap-3 sm:justify-end">
+                <span className="rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-extrabold text-amber-700">
                   Aguardando 1º acesso
                 </span>
                 {excluirConvite && (
                   <button
                     onClick={() => excluir(c.numero)}
                     disabled={pending}
-                    className="text-xs font-medium text-red-600 underline disabled:opacity-60"
+                    className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-extrabold text-red-600 hover:bg-red-100 disabled:opacity-60"
                   >
                     Excluir
                   </button>
                 )}
               </div>
-            </li>
+            </article>
           ))}
-        </ul>
+        </div>
       )}
 
-      {contas.length === 0 ? (
-        <p className="text-sm text-slate-500">{vazio}</p>
+      {contas.length === 0 && convitesPendentes.length === 0 ? (
+        <div className="rounded-[24px] border border-dashed border-slate-200 bg-white p-8 text-center">
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-brand-gold-soft text-lg font-black text-brand-navy">
+            +
+          </div>
+          <p className="mt-3 text-sm font-extrabold text-brand-navy-dark">{vazio}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">
+            Cadastre o primeiro acesso usando o formulário acima.
+          </p>
+        </div>
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
-          {contas.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-slate-900">
-                  {c.nome}
+      contas.map((c) => {
+        const iniciais = c.nome
+          .split(" ")
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((p) => p[0])
+          .join("")
+          .toUpperCase();
+
+        return (
+          <article
+            key={c.id}
+            className="premium-panel flex flex-col gap-4 rounded-[22px] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+          >
+            <div className="flex min-w-0 items-center gap-3.5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-gold text-sm font-black text-brand-navy-dark shadow-sm">
+                {iniciais || "MX"}
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="truncate text-base font-black tracking-[-0.02em] text-brand-navy-dark">
+                    {c.nome}
+                  </h3>
+                  <span className="rounded-full bg-brand-navy/[0.055] px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.1em] text-brand-navy/55">
+                    {rotulo}
+                  </span>
                   {c.numero_login && (
-                    <span className="text-slate-400"> · nº {c.numero_login}</span>
+                    <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-[9px] font-black text-brand-navy/70">
+                      nº {c.numero_login}
+                    </span>
                   )}
+                </div>
+                <p className="mt-1 text-sm font-semibold text-slate-500">
+                  {c.telefone ?? "Telefone não informado"}
                 </p>
-                <p className="text-xs text-slate-500">{c.telefone ?? "sem telefone"}</p>
               </div>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    c.ativo ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
-                  }`}
-                >
-                  {c.ativo ? "Ativo" : "Inativo"}
-                </span>
-                <button
-                  onClick={() => alternar(c.id, !c.ativo)}
-                  disabled={pending}
-                  className="text-xs font-medium text-slate-600 underline disabled:opacity-60"
-                >
-                  {c.ativo ? "Desativar" : "Reativar"}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 sm:justify-end">
+              <span
+                className={
+                  "rounded-full px-3 py-1.5 text-[10px] font-extrabold " +
+                  (c.ativo
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-slate-100 text-slate-500")
+                }
+              >
+                {c.ativo ? "● Ativo" : "Inativo"}
+              </span>
+
+              <button
+                onClick={() => alternar(c.id, !c.ativo)}
+                disabled={pending}
+                className={
+                  "rounded-xl border px-3 py-2 text-xs font-extrabold disabled:opacity-60 " +
+                  (c.ativo
+                    ? "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    : "border-emerald-100 bg-emerald-50 text-emerald-700 hover:bg-emerald-100")
+                }
+              >
+                {c.ativo ? "Desativar" : "Reativar"}
+              </button>
+            </div>
+          </article>
+        );
+      })
       )}
     </div>
   );

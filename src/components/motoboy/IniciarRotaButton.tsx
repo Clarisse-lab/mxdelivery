@@ -33,11 +33,13 @@ export default function IniciarRotaButton({
 
   return (
     <div className="space-y-2">
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && (
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{erro}</p>
+      )}
       <button
         onClick={iniciar}
         disabled={pending}
-        className="w-full rounded-lg bg-emerald-600 py-3 text-base font-semibold text-white disabled:opacity-60"
+        className="w-full rounded-xl bg-brand-gold py-3.5 text-base font-black text-brand-navy-dark shadow-[0_10px_24px_rgba(218,169,0,.18)] hover:bg-[#ffd84d] disabled:opacity-60"
       >
         {pending ? "Iniciando..." : "Iniciar rota"}
       </button>

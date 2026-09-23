@@ -50,48 +50,74 @@ export default function PedidoDetalheAcoes({
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-slate-200 p-4">
-      <h2 className="text-sm font-semibold text-slate-700">Motoboy</h2>
+    <section className="premium-panel rounded-[26px] p-5 sm:p-6">
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold-dark">
+          Gestão
+        </p>
+        <h2 className="mt-1 text-lg font-black tracking-[-0.025em] text-brand-navy-dark">
+          Responsável pela entrega
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-slate-500">
+          Reatribua o pedido para outro motoboy ou devolva-o para a fila.
+        </p>
+      </div>
 
       {podeReatribuir ? (
-        <div className="flex gap-2">
-          <select
-            value={selecionado}
-            onChange={(e) => setSelecionado(e.target.value)}
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          >
-            <option value="">Fila (sem motoboy)</option>
-            {motoboys.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.nome}
-              </option>
-            ))}
-          </select>
+        <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+          <div>
+            <label
+              htmlFor="motoboy"
+              className="mb-2 block text-[10px] font-black uppercase tracking-[0.12em] text-slate-400"
+            >
+              Motoboy
+            </label>
+            <select
+              id="motoboy"
+              value={selecionado}
+              onChange={(e) => setSelecionado(e.target.value)}
+              className="premium-input w-full rounded-xl px-4 py-3.5 text-[15px] font-semibold text-brand-navy-dark"
+            >
+              <option value="">Fila (sem motoboy)</option>
+              {motoboys.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button
             onClick={salvarMotoboy}
             disabled={pending}
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+            className="self-end rounded-xl bg-brand-navy px-5 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(11,49,95,.16)] hover:bg-brand-navy-dark disabled:opacity-60"
           >
-            Salvar
+            {pending ? "Salvando..." : "Salvar responsável"}
           </button>
         </div>
       ) : (
-        <p className="text-sm text-slate-500">
+        <p className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-500">
           Não é possível alterar o motoboy neste status.
         </p>
       )}
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && (
+        <p className="mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {erro}
+        </p>
+      )}
 
       {podeCancelar && (
-        <button
-          onClick={cancelar}
-          disabled={pending}
-          className="text-sm font-medium text-red-600 disabled:opacity-60"
-        >
-          Cancelar pedido
-        </button>
+        <div className="mt-5 border-t border-slate-100 pt-5">
+          <button
+            onClick={cancelar}
+            disabled={pending}
+            className="rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-extrabold text-red-600 hover:bg-red-50 disabled:opacity-60"
+          >
+            Cancelar pedido
+          </button>
+        </div>
       )}
-    </div>
+    </section>
   );
 }

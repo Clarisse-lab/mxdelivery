@@ -40,104 +40,135 @@ export default async function EntregaDetalhePage({
   const banner = definirBanner(p.status, ehMinha, naFila);
 
   return (
-    <div className="space-y-4 pb-28">
-      <Link href="/motoboy/entregas" className="text-sm font-medium text-slate-500">
-        ← Minhas entregas
+    <div className="space-y-5 pb-32">
+      <Link
+        href="/motoboy/entregas"
+        className="inline-flex items-center gap-2 text-sm font-extrabold text-brand-navy/55 hover:text-brand-navy"
+      >
+        <span aria-hidden="true">←</span>
+        Minhas entregas
       </Link>
 
-      <div className={`flex items-center gap-3 rounded-xl px-4 py-3 ${banner.classe}`}>
-        {banner.pulsante && (
-          <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-brand-gold" />
-        )}
-        <div className="flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wide opacity-80">
-            Pedido #{p.numero}
-          </p>
-          <p className="text-lg font-bold">{banner.texto}</p>
+      <section className={"relative overflow-hidden rounded-[26px] px-5 py-5 shadow-[0_16px_36px_rgba(11,49,95,.10)] " + banner.classe}>
+        <div className="absolute -right-12 -top-14 h-36 w-36 rounded-full border-[24px] border-white/15" />
+        <div className="relative z-10 flex items-center gap-3">
+          {banner.pulsante && (
+            <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-brand-gold" />
+          )}
+          <div className="flex-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] opacity-65">
+              Pedido #{p.numero}
+            </p>
+            <p className="mt-1 text-xl font-black tracking-[-0.03em]">{banner.texto}</p>
+          </div>
+          <div className="rounded-2xl bg-white/15 px-3 py-2 text-right backdrop-blur-sm">
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] opacity-60">Valor</p>
+            <p className="mt-0.5 text-sm font-black">{formatarMoeda(p.valor_total)}</p>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="rounded-xl bg-blue-600 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-blue-100">Bairro</p>
-        <p className="text-2xl font-bold text-white">{p.bairro}</p>
-      </div>
+      <section className="rounded-[24px] bg-brand-gold px-5 py-5 shadow-[0_14px_30px_rgba(218,169,0,.10)]">
+        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-brand-navy/50">Bairro</p>
+        <p className="mt-1 text-2xl font-black tracking-[-0.035em] text-brand-navy-dark">{p.bairro}</p>
+      </section>
 
       {p.precisa_receita && (
-        <div className="rounded-xl border-2 border-red-500 bg-red-50 p-4">
-          <p className="text-base font-bold text-red-700">⚠ Recolher receita controlada</p>
-          <ul className="mt-1 text-sm text-red-700">
-            {listaReceitas.map((r) => (
-              <li key={r.id}>
-                {r.quantidade}x · {TIPO_RECEITA_LABEL[r.tipo_receita]}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <section className="rounded-[24px] border border-red-200 bg-red-50 p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-600 text-lg font-black text-white">
+              !
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-red-400">
+                Atenção obrigatória
+              </p>
+              <h2 className="mt-1 text-lg font-black text-red-800">Recolher receita controlada</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {listaReceitas.map((r) => (
+                  <span
+                    key={r.id}
+                    className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-red-700 shadow-sm"
+                  >
+                    {r.quantidade}x · {TIPO_RECEITA_LABEL[r.tipo_receita]}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
       )}
 
-      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+      <section className="premium-panel rounded-[26px] p-5">
         <div>
-          <p className="text-xs font-medium text-slate-500">Cliente</p>
-          <p className="text-base text-slate-900">{p.cliente_nome}</p>
-        </div>
-        <div>
-          <p className="text-xs font-medium text-slate-500">Endereço</p>
-          <p className="text-base text-slate-900">{p.endereco}</p>
-        </div>
-        {p.referencia && (
-          <div>
-            <p className="text-xs font-medium text-slate-500">Referência</p>
-            <p className="text-base text-slate-900">{p.referencia}</p>
-          </div>
-        )}
-        <div>
-          <p className="text-xs font-medium text-slate-500">Valor total</p>
-          <p className="text-base text-slate-900">{formatarMoeda(p.valor_total)}</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand-gold-dark">
+            Dados da entrega
+          </p>
+          <h2 className="mt-1 text-lg font-black tracking-[-0.025em] text-brand-navy-dark">
+            Informações do cliente
+          </h2>
         </div>
 
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-slate-500">Pagamento</p>
-          {listaPagamentos.map((pg) => {
-            const troco = calcularTroco(pg.valor, pg.troco_para);
-            const cobrar = pg.forma_pagamento !== "pix" || pg.pix_pago !== true;
-            return (
-              <div
-                key={pg.id}
-                className={`rounded-lg p-3 ${cobrar ? "bg-amber-100" : "bg-emerald-50"}`}
-              >
-                <p className={`text-base font-bold ${cobrar ? "text-amber-900" : "text-emerald-800"}`}>
-                  {descreverPagamento(pg)}
-                  {listaPagamentos.length > 1 && ` · ${formatarMoeda(pg.valor)}`}
-                </p>
-                {!cobrar && <p className="text-xs text-emerald-700">Já pago — nada a cobrar</p>}
-                {troco !== null && (
-                  <p className="text-sm font-semibold text-amber-900">
-                    Cliente paga com {formatarMoeda(pg.troco_para!)} · Levar troco:{" "}
-                    {formatarMoeda(troco)}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <InfoCard label="Cliente" valor={p.cliente_nome} destaque />
+          <InfoCard label="Valor total" valor={formatarMoeda(p.valor_total)} tom="yellow" />
+          <InfoCard label="Endereço" valor={p.endereco} className="sm:col-span-2" />
+          {p.referencia && <InfoCard label="Referência" valor={p.referencia} className="sm:col-span-2" />}
 
-        {p.observacoes && (
-          <div>
-            <p className="text-xs font-medium text-slate-500">Observações</p>
-            <p className="text-base text-slate-900">{p.observacoes}</p>
+          <div className="sm:col-span-2 rounded-2xl border border-slate-200/80 bg-slate-50/75 p-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Pagamento</p>
+            <div className="mt-3 space-y-2.5">
+              {listaPagamentos.length === 0 && (
+                <p className="text-sm font-semibold text-slate-400">Nenhum pagamento cadastrado.</p>
+              )}
+              {listaPagamentos.map((pg) => {
+                const troco = calcularTroco(pg.valor, pg.troco_para);
+                const cobrar = pg.forma_pagamento !== "pix" || pg.pix_pago !== true;
+                return (
+                  <div
+                    key={pg.id}
+                    className={
+                      "rounded-2xl border p-3.5 " +
+                      (cobrar
+                        ? "border-brand-gold/35 bg-brand-gold-soft/50"
+                        : "border-emerald-100 bg-emerald-50/70")
+                    }
+                  >
+                    <p className={"text-sm font-black " + (cobrar ? "text-amber-900" : "text-emerald-800")}>
+                      {descreverPagamento(pg)}
+                      {listaPagamentos.length > 1 && " · " + formatarMoeda(pg.valor)}
+                    </p>
+                    {!cobrar && (
+                      <p className="mt-1 text-[11px] font-bold text-emerald-700">✓ Já pago — nada a cobrar</p>
+                    )}
+                    {troco !== null && (
+                      <p className="mt-1.5 text-xs font-extrabold text-amber-900">
+                        Cliente paga com {formatarMoeda(pg.troco_para!)} · Levar troco: {formatarMoeda(troco)}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        )}
-      </div>
+
+          {p.observacoes && (
+            <InfoCard label="Observações" valor={p.observacoes} className="sm:col-span-2" tom="yellow" />
+          )}
+        </div>
+      </section>
 
       {p.status === "problema" && p.motivo_problema && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          <strong>Problema reportado:</strong> {p.motivo_problema}
+        <div className="rounded-[20px] border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <p className="font-black">Problema reportado</p>
+          <p className="mt-1">{p.motivo_problema}</p>
         </div>
       )}
 
       {p.observacao_motoboy && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
-          <strong>Sua observação:</strong> {p.observacao_motoboy}
+        <div className="rounded-[20px] border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
+          <p className="font-black">Sua observação</p>
+          <p className="mt-1">{p.observacao_motoboy}</p>
         </div>
       )}
 
@@ -156,8 +187,8 @@ export default async function EntregaDetalhePage({
       {ehMinha && p.status === "em_rota" && (
         <AcaoFixa>
           <Link
-            href={`/motoboy/entregas/${p.id}/finalizar`}
-            className="block w-full rounded-lg bg-emerald-600 py-3 text-center text-base font-semibold text-white"
+            href={"/motoboy/entregas/" + p.id + "/finalizar"}
+            className="block w-full rounded-xl bg-brand-navy py-3.5 text-center text-base font-black text-white shadow-[0_10px_24px_rgba(11,49,95,.18)]"
           >
             Finalizar entrega
           </Link>
@@ -167,29 +198,49 @@ export default async function EntregaDetalhePage({
   );
 }
 
+function InfoCard({
+  label,
+  valor,
+  className,
+  destaque = false,
+  tom = "neutral",
+}: {
+  label: string;
+  valor: string;
+  className?: string;
+  destaque?: boolean;
+  tom?: "neutral" | "yellow";
+}) {
+  const base =
+    tom === "yellow"
+      ? "border-brand-gold/30 bg-brand-gold-soft/45"
+      : destaque
+        ? "border-brand-navy/10 bg-brand-navy/[0.045]"
+        : "border-slate-200/80 bg-slate-50/75";
+
+  return (
+    <div className={"rounded-2xl border p-4 " + base + " " + (className ?? "")}>
+      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">{label}</p>
+      <p className="mt-1.5 text-[15px] font-extrabold leading-6 text-brand-navy-dark">{valor}</p>
+    </div>
+  );
+}
+
 function definirBanner(status: Pedido["status"], ehMinha: boolean, naFila: boolean) {
   if (naFila) {
-    return { texto: "Disponível na fila", classe: "bg-slate-100 text-slate-700", pulsante: false };
+    return { texto: "Disponível na fila", classe: "bg-slate-200 text-brand-navy-dark", pulsante: false };
   }
   if (ehMinha && status === "pendente") {
-    return {
-      texto: "Pronta para iniciar",
-      classe: "bg-amber-100 text-amber-900",
-      pulsante: false,
-    };
+    return { texto: "Pronta para iniciar", classe: "bg-brand-gold text-brand-navy-dark", pulsante: false };
   }
   if (ehMinha && status === "em_rota") {
-    return {
-      texto: "Em rota — a caminho do cliente",
-      classe: "bg-brand-navy text-white",
-      pulsante: true,
-    };
+    return { texto: "Em rota — a caminho do cliente", classe: "bg-brand-navy text-white", pulsante: true };
   }
   if (status === "problema") {
-    return { texto: "Entrega com problema", classe: "bg-red-100 text-red-900", pulsante: false };
+    return { texto: "Entrega com problema", classe: "bg-red-600 text-white", pulsante: false };
   }
   if (status === "entregue") {
-    return { texto: "Entrega concluída", classe: "bg-emerald-100 text-emerald-900", pulsante: false };
+    return { texto: "Entrega concluída", classe: "bg-emerald-600 text-white", pulsante: false };
   }
-  return { texto: "Cancelado", classe: "bg-slate-200 text-slate-600", pulsante: false };
+  return { texto: "Cancelado", classe: "bg-slate-300 text-slate-700", pulsante: false };
 }
