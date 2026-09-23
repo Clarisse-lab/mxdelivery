@@ -6,7 +6,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // Além do _next, exclui qualquer arquivo estático (com extensão no
+  // último trecho do caminho) — favicon, manifest, ícones, imagens em
+  // public/, etc. — pra não redirecionar pro /login quem não está
+  // logado só por pedir uma imagem numa página pública.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons/).*)",
+    "/((?!_next/static|_next/image|.*\\.[^/]+$).*)",
   ],
 };
