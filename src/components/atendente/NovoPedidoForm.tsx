@@ -161,49 +161,81 @@ export default function NovoPedidoForm() {
         />
 
         {pagamentos.map((linha, index) => (
-          <div key={index} className="space-y-3 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
-            <div className="flex items-center gap-2">
-              <select
-                value={linha.forma_pagamento}
-                onChange={(e) =>
-                  atualizarLinha(index, { forma_pagamento: e.target.value as FormaPagamento })
-                }
-                required
-                className={inputClass}
-              >
-                <option value="" disabled>
-                  Selecione
-                </option>
-                <option value="dinheiro">Dinheiro</option>
-                <option value="cartao">Cartão</option>
-                <option value="pix">Pix</option>
-              </select>
-              {dividido && (
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder="Valor (R$)"
-                  value={linha.valor}
-                  onChange={(e) => atualizarLinha(index, { valor: e.target.value })}
-                  onWheel={semScrollNoNumero}
-                  className={`${inputClass} w-32 shrink-0`}
-                />
-              )}
+          <div
+            key={index}
+            className="min-w-0 space-y-4 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 sm:p-5"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.13em] text-slate-400">
+                  Pagamento {index + 1}
+                </p>
+                <p className="mt-0.5 text-sm font-extrabold text-brand-navy-dark">
+                  {linha.forma_pagamento
+                    ? linha.forma_pagamento === "cartao"
+                      ? "Cartão"
+                      : linha.forma_pagamento === "pix"
+                        ? "Pix"
+                        : "Dinheiro"
+                    : "Escolha a forma de pagamento"}
+                </p>
+              </div>
+
               {pagamentos.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removerLinha(index)}
-                  className="shrink-0 rounded-lg px-2 py-1 text-xs font-extrabold text-red-600 hover:bg-red-50"
+                  className="shrink-0 rounded-xl border border-red-100 bg-white px-3 py-2 text-xs font-extrabold text-red-600 hover:bg-red-50"
                 >
                   Remover
                 </button>
               )}
             </div>
 
+            <div className={dividido ? "grid min-w-0 gap-3 sm:grid-cols-2" : "min-w-0"}>
+              <div className="min-w-0">
+                <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.12em] text-brand-navy/55">
+                  Forma
+                </label>
+                <select
+                  value={linha.forma_pagamento}
+                  onChange={(e) =>
+                    atualizarLinha(index, { forma_pagamento: e.target.value as FormaPagamento })
+                  }
+                  required
+                  className={inputClass}
+                >
+                  <option value="" disabled>
+                    Selecione
+                  </option>
+                  <option value="dinheiro">Dinheiro</option>
+                  <option value="cartao">Cartão</option>
+                  <option value="pix">Pix</option>
+                </select>
+              </div>
+
+              {dividido && (
+                <div className="min-w-0">
+                  <label className="mb-2 block text-[10px] font-black uppercase tracking-[0.12em] text-brand-navy/55">
+                    Valor desta forma
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Valor (R$)"
+                    value={linha.valor}
+                    onChange={(e) => atualizarLinha(index, { valor: e.target.value })}
+                    onWheel={semScrollNoNumero}
+                    className={inputClass}
+                  />
+                </div>
+              )}
+            </div>
+
             {linha.forma_pagamento === "cartao" && (
-              <div className="space-y-2 pl-1">
-                <div className="flex gap-4 text-sm text-slate-700">
+              <div className="space-y-3 rounded-2xl border border-brand-navy/8 bg-white/75 p-4">
+                <div className="flex flex-wrap gap-4 text-sm font-semibold text-slate-700">
                   <label className="flex items-center gap-1.5">
                     <input
                       type="radio"
@@ -218,7 +250,7 @@ export default function NovoPedidoForm() {
                       type="radio"
                       checked={linha.cartaoTipo === "debito"}
                       onChange={() => atualizarLinha(index, { cartaoTipo: "debito" })}
-                      className="h-4 w-4"
+                      className="h-5 w-5 accent-brand-navy"
                     />
                     Débito
                   </label>
@@ -228,7 +260,7 @@ export default function NovoPedidoForm() {
                     type="checkbox"
                     checked={linha.parcelar}
                     onChange={(e) => atualizarLinha(index, { parcelar: e.target.checked })}
-                    className="h-4 w-4"
+                    className="h-5 w-5 accent-brand-navy"
                   />
                   Parcelar
                 </label>
@@ -240,20 +272,20 @@ export default function NovoPedidoForm() {
                     onChange={(e) => atualizarLinha(index, { parcelas: e.target.value })}
                     onWheel={semScrollNoNumero}
                     placeholder="Nº de parcelas"
-                    className={`${inputClass} w-32`}
+                    className={inputClass}
                   />
                 )}
               </div>
             )}
 
             {linha.forma_pagamento === "pix" && (
-              <div className="space-y-2 pl-1">
+              <div className="space-y-3 rounded-2xl border border-brand-navy/8 bg-white/75 p-4">
                 <label className="flex items-center gap-2 text-sm text-slate-700">
                   <input
                     type="checkbox"
                     checked={linha.pixPago}
                     onChange={(e) => atualizarLinha(index, { pixPago: e.target.checked })}
-                    className="h-4 w-4"
+                    className="h-5 w-5 accent-brand-navy"
                   />
                   Já foi pago
                 </label>
@@ -269,20 +301,20 @@ export default function NovoPedidoForm() {
                     name={`comprovante_pix_${index}`}
                     type="file"
                     accept="image/*,.pdf"
-                    className="block w-full text-sm text-slate-600"
+                    className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-navy file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-white"
                   />
                 </div>
               </div>
             )}
 
             {linha.forma_pagamento === "dinheiro" && (
-              <div className="space-y-2 pl-1">
+              <div className="space-y-3 rounded-2xl border border-brand-navy/8 bg-white/75 p-4">
                 <label className="flex items-center gap-2 text-sm text-slate-700">
                   <input
                     type="checkbox"
                     checked={linha.troco}
                     onChange={(e) => atualizarLinha(index, { troco: e.target.checked })}
-                    className="h-4 w-4"
+                    className="h-5 w-5 accent-brand-navy"
                   />
                   Precisa de troco
                 </label>
@@ -360,7 +392,7 @@ export default function NovoPedidoForm() {
             name="precisa_receita"
             checked={precisaReceita}
             onChange={(e) => setPrecisaReceita(e.target.checked)}
-            className="h-4 w-4"
+            className="h-5 w-5 accent-brand-navy"
           />
           Precisa de receita
         </label>
@@ -368,7 +400,10 @@ export default function NovoPedidoForm() {
         {precisaReceita && (
           <div className="space-y-3">
             {receitas.map((receita, index) => (
-              <div key={index} className="grid gap-2 sm:grid-cols-[1fr_5rem_auto]">
+              <div
+                key={index}
+                className="grid min-w-0 gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-[minmax(0,1fr)_7rem_auto]"
+              >
                 <select
                   value={receita.tipo_receita}
                   onChange={(e) => atualizarReceita(index, "tipo_receita", e.target.value)}
