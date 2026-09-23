@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Pedido, Perfil, StatusPedido } from "@/lib/types/database";
 import PedidoCard from "./PedidoCard";
 
@@ -23,17 +23,36 @@ export default function KanbanBoard({
   pedidos: Pedido[];
   motoboys: Perfil[];
 }) {
+  const [busca, setBusca] = useState("");
+  const [motoboyFiltro, setMotoboyFiltro] = useState("");
+
   const motoboysPorId = useMemo(
     () => new Map(motoboys.map((m) => [m.id, m])),
     [motoboys],
   );
 
+  const pedidosFiltrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+    return pedidos.filter((p) => {
+      if (motoboyFiltro === "sem" && p.motoboy_id !== null) return false;
+      if (motoboyFiltro && motoboyFiltro !== "sem" && p.motoboy_id !== motoboyFiltro) return false;
+      if (termo) {
+        const noCliente = p.cliente_nome.toLowerCase().includes(termo);
+        const noBairro = (p.bairro ?? "").toLowerCase().includes(termo);
+        if (!noCliente && !noBairro) return false;
+      }
+      return true;
+    });
+  }, [pedidos, motoboyFiltro, busca]);
+
+  const filtroAtivo = busca.trim() !== "" || motoboyFiltro !== "";
+
   const hoje = new Date().toDateString();
-  const problemas = pedidos.filter((p) => p.status === "problema");
+  const problemas = pedidosFiltrados.filter((p) => p.status === "problema");
 
   const colunas = COLUNAS.map((coluna) => ({
     ...coluna,
-    pedidos: pedidos.filter((p) => {
+    pedidos: pedidosFiltrados.filter((p) => {
       if (p.status !== coluna.status) return false;
       if (coluna.status === "entregue") {
         return p.entregue_em && new Date(p.entregue_em).toDateString() === hoje;
@@ -49,8 +68,66 @@ export default function KanbanBoard({
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-gold-dark">Operação</p>
           <h2 className="mt-1 text-xl font-black tracking-[-0.035em] text-brand-navy-dark">Fluxo de pedidos</h2>
         </div>
-        <p className="text-xs font-medium text-slate-400">{pedidos.length} pedidos no painel</p>
+        <p className="text-xs font-medium text-slate-400">
+          {pedidosFiltrados.length} {pedidosFiltrados.length === 1 ? "pedido" : "pedidos"} no painel
+        </p>
       </div>
+
+      <div className="flex flex-wrap items-center gap-2.5 rounded-[18px] border border-slate-200/80 bg-white p-3 shadow-[0_2px_9px_rgba(7,31,61,.045)]">
+        <div className="relative min-w-[220px] flex-1">
+          <svg
+            viewBox="0 0 24 24"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-350"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" strokeLinecap="round" />
+          </svg>
+          <input
+            type="text"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar por cliente ou bairro..."
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm font-medium text-brand-navy-dark placeholder:text-slate-400 focus:border-brand-gold focus:bg-white focus:outline-none"
+          />
+        </div>
+
+        <select
+          value={motoboyFiltro}
+          onChange={(e) => setMotoboyFiltro(e.target.value)}
+          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-brand-navy-dark focus:border-brand-gold focus:bg-white focus:outline-none"
+        >
+          <option value="">Todos os entregadores</option>
+          <option value="sem">Sem motoboy (fila)</option>
+          {motoboys.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.nome}
+            </option>
+          ))}
+        </select>
+
+        {filtroAtivo && (
+          <button
+            type="button"
+            onClick={() => {
+              setBusca("");
+              setMotoboyFiltro("");
+            }}
+            className="rounded-xl px-3 py-2.5 text-xs font-bold text-brand-navy/55 hover:text-brand-navy"
+          >
+            Limpar filtros
+          </button>
+        )}
+      </div>
+
+      {filtroAtivo && pedidosFiltrados.length === 0 && (
+        <div className="rounded-[20px] border border-dashed border-slate-200 bg-white/60 px-4 py-8 text-center">
+          <p className="text-xs font-semibold text-slate-350">Nenhum pedido encontrado com esses filtros</p>
+        </div>
+      )}
 
       {problemas.length > 0 && (
         <div className="rounded-[20px] border border-red-100 bg-red-50/80 p-4 shadow-sm">
