@@ -117,6 +117,7 @@ export default async function PedidoDetalhePage({
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <InfoCard label="Cliente" valor={p.cliente_nome} destaque />
+          <InfoCard label="Telefone" valor={p.cliente_telefone ?? "Não informado"} />
           <InfoCard label="Motoboy" valor={motoboyAtual?.nome ?? "Fila (sem motoboy)"} />
           {criador && <InfoCard label="Criado por" valor={criador.nome} />}
           <InfoCard label="Endereço" valor={p.endereco} className="sm:col-span-2 lg:col-span-2" />

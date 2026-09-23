@@ -35,6 +35,7 @@ export interface Pedido {
   numero: number;
 
   cliente_nome: string;
+  cliente_telefone: string | null;
   endereco: string;
   bairro: string | null;
   referencia: string | null;

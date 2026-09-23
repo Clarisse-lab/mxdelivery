@@ -118,6 +118,7 @@ export async function criarPedido(
     .from("pedidos")
     .insert({
       cliente_nome: clienteNome,
+      cliente_telefone: (formData.get("cliente_telefone") as string)?.trim() || null,
       endereco,
       bairro,
       referencia: (formData.get("referencia") as string)?.trim() || null,

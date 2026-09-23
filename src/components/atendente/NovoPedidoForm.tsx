@@ -3,6 +3,7 @@
 import { useActionState, useState, type WheelEvent } from "react";
 import { criarPedido, type EstadoFormPedido } from "@/app/atendente/pedidos/novo/actions";
 import SubmitButton from "@/components/ui/SubmitButton";
+import ComboboxTexto from "@/components/ui/ComboboxTexto";
 import {
   TIPOS_RECEITA,
   type CartaoTipo,
@@ -109,8 +110,18 @@ export default function NovoPedidoForm() {
           descricao="Preencha os dados principais do pedido e do endereço de entrega."
         />
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <Campo label="Cliente" htmlFor="cliente_nome" className="sm:col-span-2">
+        <Campo label="Cliente" htmlFor="cliente_nome">
           <input id="cliente_nome" name="cliente_nome" required className={inputClass} />
+        </Campo>
+
+        <Campo label="Telefone" htmlFor="cliente_telefone">
+          <input
+            id="cliente_telefone"
+            name="cliente_telefone"
+            type="tel"
+            placeholder="(33) 99999-9999"
+            className={inputClass}
+          />
         </Campo>
 
         <Campo label="Endereço" htmlFor="endereco" className="sm:col-span-2">
@@ -118,18 +129,13 @@ export default function NovoPedidoForm() {
         </Campo>
 
         <Campo label="Bairro" htmlFor="bairro">
-          <input
+          <ComboboxTexto
             id="bairro"
             name="bairro"
-            list="bairros-sugestoes"
+            opcoes={BAIRROS_GOVERNADOR_VALADARES}
             required
             className={inputClass}
           />
-          <datalist id="bairros-sugestoes">
-            {BAIRROS_GOVERNADOR_VALADARES.map((bairro) => (
-              <option key={bairro} value={bairro} />
-            ))}
-          </datalist>
         </Campo>
 
         <Campo label="Ponto de referência" htmlFor="referencia">

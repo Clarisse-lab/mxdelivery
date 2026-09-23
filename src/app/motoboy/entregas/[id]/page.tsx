@@ -112,6 +112,7 @@ export default async function EntregaDetalhePage({
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <InfoCard label="Cliente" valor={p.cliente_nome} destaque />
           <InfoCard label="Valor total" valor={formatarMoeda(p.valor_total)} tom="yellow" />
+          {p.cliente_telefone && <InfoCard label="Telefone" valor={p.cliente_telefone} />}
           <InfoCard label="Endereço" valor={p.endereco} className="sm:col-span-2" />
           {p.referencia && <InfoCard label="Referência" valor={p.referencia} className="sm:col-span-2" />}
 
