@@ -58,10 +58,22 @@ export default async function PedidoDetalhePage({
     listaPagamentos
       .filter((pg) => pg.comprovante_pix_path)
       .map(async (pg) => {
-        const { data: signed } = await supabase.storage
-          .from("comprovantes-pix")
-          .createSignedUrl(pg.comprovante_pix_path!, 60);
-        return { id: pg.id, url: signed?.signedUrl ?? null };
+        const caminho = pg.comprovante_pix_path!;
+        const extensao = caminho.split(".").pop() ?? "bin";
+        const nomeArquivo = `comprovante-pedido-${p.numero}-pix.${extensao}`;
+
+        const [{ data: visualizar }, { data: baixar }] = await Promise.all([
+          supabase.storage.from("comprovantes-pix").createSignedUrl(caminho, 60),
+          supabase.storage
+            .from("comprovantes-pix")
+            .createSignedUrl(caminho, 60, { download: nomeArquivo }),
+        ]);
+
+        return {
+          id: pg.id,
+          url: visualizar?.signedUrl ?? null,
+          urlDownload: baixar?.signedUrl ?? null,
+        };
       }),
   );
 
@@ -217,14 +229,24 @@ export default async function PedidoDetalhePage({
                 )}
 
                 {comprovante?.url && (
-                  <a
-                    href={comprovante.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex rounded-lg bg-brand-navy px-3 py-2 text-xs font-extrabold text-white"
-                  >
-                    Ver comprovante
-                  </a>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <a
+                      href={comprovante.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-lg bg-brand-navy px-3 py-2 text-xs font-extrabold text-white"
+                    >
+                      Ver comprovante
+                    </a>
+                    {comprovante.urlDownload && (
+                      <a
+                        href={comprovante.urlDownload}
+                        className="inline-flex rounded-lg border border-brand-navy/20 bg-white px-3 py-2 text-xs font-extrabold text-brand-navy hover:bg-brand-navy/5"
+                      >
+                        Baixar
+                      </a>
+                    )}
+                  </div>
                 )}
               </div>
             );
