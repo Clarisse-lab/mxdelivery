@@ -48,7 +48,7 @@ export interface Pedido {
   status: StatusPedido;
 
   motoboy_id: string | null;
-  criado_por: string;
+  criado_por: string | null;
 
   receita_coletada: boolean;
   troco_entregue: boolean;

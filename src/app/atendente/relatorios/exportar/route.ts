@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
     const pagamentosDoPedido = pagamentosPorPedido.get(p.id) ?? [];
     const receitasDoPedido = receitasPorPedido.get(p.id) ?? [];
     const motoboy = p.motoboy_id ? perfilPorId.get(p.motoboy_id) : undefined;
-    const criador = perfilPorId.get(p.criado_por);
+    const criador = p.criado_por ? perfilPorId.get(p.criado_por) : undefined;
 
     abaDetalhes.addRow([
       p.numero,

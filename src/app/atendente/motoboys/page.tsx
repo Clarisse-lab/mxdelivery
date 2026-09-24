@@ -3,7 +3,7 @@ import { getPerfilAtual } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import CriarContaForm from "@/components/atendente/CriarContaForm";
 import ContasList from "@/components/atendente/ContasList";
-import { criarMotoboy, definirAtivo, excluirConvite } from "./actions";
+import { criarMotoboy, definirAtivo, excluirConvite, excluirConta } from "./actions";
 import type { Perfil, Convite } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +75,7 @@ export default async function MotoboysPage() {
           convitesPendentes={(convites as Convite[]) ?? []}
           definirAtivo={definirAtivo}
           excluirConvite={excluirConvite}
+          excluirConta={excluirConta}
           vazio="Nenhum motoboy cadastrado ainda."
           rotulo="Motoboy"
         />

@@ -2,7 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { exigirAdmin } from "@/lib/authGuards";
-import { criarConvite, excluirConvite as excluirConviteBase } from "@/lib/convites";
+import {
+  criarConvite,
+  excluirConvite as excluirConviteBase,
+  excluirContaBase,
+} from "@/lib/convites";
 import { revalidatePath } from "next/cache";
 import type { EstadoFormConta } from "@/components/atendente/CriarContaForm";
 
@@ -27,6 +31,12 @@ export async function definirAtivo(contaId: string, ativo: boolean) {
   const { error } = await supabase.from("perfis").update({ ativo }).eq("id", contaId);
   if (error) throw new Error(error.message);
 
+  revalidatePath("/atendente/atendentes");
+  revalidatePath("/atendente/motoboys");
+}
+
+export async function excluirConta(contaId: string) {
+  await excluirContaBase(contaId);
   revalidatePath("/atendente/atendentes");
   revalidatePath("/atendente/motoboys");
 }

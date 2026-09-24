@@ -49,7 +49,7 @@ export default async function PedidoDetalhePage({
   const urgencia = URGENCIA_UI[calcularNivelUrgencia(p)];
 
   let criador: Perfil | null = null;
-  if (p.criado_por !== perfilAtual?.id) {
+  if (p.criado_por && p.criado_por !== perfilAtual?.id) {
     const { data } = await supabase.from("perfis").select("*").eq("id", p.criado_por).single();
     criador = data as Perfil | null;
   }
@@ -326,8 +326,9 @@ export default async function PedidoDetalhePage({
         />
       ) : (
         <p className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-500">
-          Este pedido foi criado por {criador?.nome ?? "outro atendente"} — apenas quem criou o pedido
-          ou um administrador pode reatribuir o motoboy ou cancelar.
+          Este pedido foi criado por{" "}
+          {criador?.nome ?? (p.criado_por ? "outro atendente" : "uma conta que já foi excluída")} —
+          apenas quem criou o pedido ou um administrador pode reatribuir o motoboy ou cancelar.
         </p>
       )}
     </div>

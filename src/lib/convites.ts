@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { exigirAdmin } from "@/lib/authGuards";
 import type { Papel } from "@/lib/types/database";
 import type { EstadoFormConta } from "@/components/atendente/CriarContaForm";
@@ -45,5 +46,26 @@ export async function excluirConvite(numero: string) {
     .delete()
     .eq("numero", numero)
     .eq("usado", false);
+  if (error) throw new Error(error.message);
+}
+
+// Exclui de vez a conta (auth.users + perfis via cascade). Pedidos
+// antigos ligados a essa pessoa continuam no histórico, só perdem a
+// vinculação (motoboy_id/criado_por voltam a null — ver migração
+// 0016_excluir_conta.sql).
+export async function excluirContaBase(perfilId: string) {
+  await exigirAdmin();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user?.id === perfilId) {
+    throw new Error("Você não pode excluir sua própria conta.");
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(perfilId);
   if (error) throw new Error(error.message);
 }

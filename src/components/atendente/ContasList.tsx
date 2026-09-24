@@ -9,6 +9,7 @@ export default function ContasList({
   convitesPendentes = [],
   definirAtivo,
   excluirConvite,
+  excluirConta,
   vazio = "Nenhuma conta cadastrada ainda.",
   rotulo = "Conta",
 }: {
@@ -16,6 +17,7 @@ export default function ContasList({
   convitesPendentes?: Convite[];
   definirAtivo: (id: string, ativo: boolean) => Promise<void>;
   excluirConvite?: (numero: string) => Promise<void>;
+  excluirConta?: (id: string) => Promise<void>;
   vazio?: string;
   rotulo?: string;
 }) {
@@ -33,6 +35,18 @@ export default function ContasList({
     if (!excluirConvite) return;
     startTransition(async () => {
       await excluirConvite(numero);
+      router.refresh();
+    });
+  }
+
+  function excluirContaConfirmar(id: string, nome: string) {
+    if (!excluirConta) return;
+    const confirmado = confirm(
+      `Excluir de vez a conta de ${nome}? Ela não vai conseguir mais logar, e pedidos antigos criados/entregues por essa pessoa continuam no histórico, só sem essa vinculação. Essa ação não pode ser desfeita.`,
+    );
+    if (!confirmado) return;
+    startTransition(async () => {
+      await excluirConta(id);
       router.refresh();
     });
   }
@@ -151,6 +165,16 @@ export default function ContasList({
               >
                 {c.ativo ? "Desativar" : "Reativar"}
               </button>
+
+              {excluirConta && (
+                <button
+                  onClick={() => excluirContaConfirmar(c.id, c.nome)}
+                  disabled={pending}
+                  className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-extrabold text-red-600 hover:bg-red-100 disabled:opacity-60"
+                >
+                  Excluir conta
+                </button>
+              )}
             </div>
           </article>
         );
