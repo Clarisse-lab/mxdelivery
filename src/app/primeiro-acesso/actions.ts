@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { emailDoNumero } from "@/lib/numeroLogin";
+import { ehPin, senhaRealDoPin } from "@/lib/pinSenha";
 
 export type EstadoAtivacao = { erro?: string; sucesso?: boolean };
 
@@ -16,7 +17,7 @@ export async function ativarConta(
   if (!numero || !/^[0-9]+$/.test(numero)) {
     return { erro: "Digite o número que o admin cadastrou pra você." };
   }
-  if (!senha || !/^[0-9]{4}$/.test(senha)) {
+  if (!senha || !ehPin(senha)) {
     return { erro: "A senha precisa ter exatamente 4 números." };
   }
   if (senha !== confirmarSenha) {
@@ -41,7 +42,7 @@ export async function ativarConta(
 
   const { error: erroCriar } = await admin.auth.admin.createUser({
     email: emailDoNumero(numero),
-    password: senha,
+    password: senhaRealDoPin(senha),
     email_confirm: true,
     user_metadata: {
       nome: convite.nome,

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import LogoMaxiPopular from "@/components/LogoMaxiPopular";
 import { emailDoNumero, pareceNumero } from "@/lib/numeroLogin";
+import { ehPin, senhaRealDoPin } from "@/lib/pinSenha";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,10 +24,17 @@ export default function LoginPage() {
       ? emailDoNumero(identificador)
       : identificador.trim();
 
+    // Atendentes/motoboys cadastram uma senha de 4 números, mas o
+    // Supabase exige 6+ caracteres pra senha real — o mesmo prefixo
+    // usado ao criar a conta em /primeiro-acesso completa o PIN aqui
+    // antes de tentar o login. Contas antigas (senha "real", não PIN)
+    // seguem sem alteração.
+    const senhaFinal = ehPin(senha) ? senhaRealDoPin(senha) : senha;
+
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
-      password: senha,
+      password: senhaFinal,
     });
 
     if (error) {
