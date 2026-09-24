@@ -76,6 +76,7 @@ export async function editarPedido(
     .update({
       cliente_nome: clienteNome,
       cliente_telefone: (formData.get("cliente_telefone") as string)?.trim() || null,
+      cep: (formData.get("cep") as string)?.trim() || null,
       endereco,
       bairro,
       referencia: (formData.get("referencia") as string)?.trim() || null,

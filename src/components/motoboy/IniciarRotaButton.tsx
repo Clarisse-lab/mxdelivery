@@ -9,10 +9,12 @@ export default function IniciarRotaButton({
   pedidoId,
   endereco,
   bairro,
+  cep,
 }: {
   pedidoId: string;
   endereco: string;
   bairro: string | null;
+  cep?: string | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -25,7 +27,7 @@ export default function IniciarRotaButton({
     // de um await, o navegador (principalmente no celular) já não trata
     // mais como uma ação do usuário e bloqueia o window.open() sem
     // avisar nada na tela.
-    window.open(linkGoogleMaps(endereco, bairro), "_blank", "noopener,noreferrer");
+    window.open(linkGoogleMaps(endereco, bairro, cep), "_blank", "noopener,noreferrer");
 
     startTransition(async () => {
       try {

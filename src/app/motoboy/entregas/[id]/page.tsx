@@ -127,6 +127,7 @@ export default async function EntregaDetalhePage({
           <InfoCard label="Valor total" valor={formatarMoeda(p.valor_total)} tom="yellow" />
           {p.cliente_telefone && <InfoCard label="Telefone" valor={p.cliente_telefone} />}
           <InfoCard label="Endereço" valor={p.endereco} className="sm:col-span-2" />
+          {p.cep && <InfoCard label="CEP" valor={p.cep} />}
           {p.referencia && <InfoCard label="Referência" valor={p.referencia} className="sm:col-span-2" />}
 
           <div className="sm:col-span-2 rounded-2xl border border-slate-200/80 bg-slate-50/75 p-4">
@@ -194,7 +195,7 @@ export default async function EntregaDetalhePage({
 
       {ehMinha && p.status === "pendente" && (
         <AcaoFixa>
-          <IniciarRotaButton pedidoId={p.id} endereco={p.endereco} bairro={p.bairro} />
+          <IniciarRotaButton pedidoId={p.id} endereco={p.endereco} bairro={p.bairro} cep={p.cep} />
         </AcaoFixa>
       )}
 

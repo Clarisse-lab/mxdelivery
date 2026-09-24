@@ -15,6 +15,7 @@ import {
 import { TIPO_RECEITA_LABEL, formatarMoeda } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
 import { BAIRROS_GOVERNADOR_VALADARES } from "@/lib/data/bairrosGovernadorValadares";
+import { apenasDigitos, buscarEnderecoPorCep, formatarCep } from "@/lib/utils/cep";
 
 const estadoInicial: EstadoFormPedido = {};
 
@@ -59,12 +60,36 @@ export default function NovoPedidoForm() {
 
   const [clienteNome, setClienteNome] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [cep, setCep] = useState("");
   const [endereco, setEndereco] = useState("");
   const [referencia, setReferencia] = useState("");
   const [bairroSelecionado, setBairroSelecionado] = useState("");
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepNaoEncontrado, setCepNaoEncontrado] = useState(false);
   const [sugestoesClientes, setSugestoesClientes] = useState<ClienteSugestao[]>([]);
   const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
   const clienteContainerRef = useRef<HTMLDivElement>(null);
+
+  function alterarCep(valor: string) {
+    const novoCep = formatarCep(valor);
+    setCep(novoCep);
+
+    if (apenasDigitos(novoCep).length !== 8) return;
+
+    setBuscandoCep(true);
+    buscarEnderecoPorCep(novoCep).then((resultado) => {
+      setBuscandoCep(false);
+
+      if (!resultado) {
+        setCepNaoEncontrado(true);
+        return;
+      }
+
+      setCepNaoEncontrado(false);
+      setBairroSelecionado(resultado.bairro);
+      setEndereco((atual) => (atual.trim() ? atual : resultado.logradouro));
+    });
+  }
 
   useEffect(() => {
     function aoClicarFora(e: MouseEvent) {
@@ -97,6 +122,7 @@ export default function NovoPedidoForm() {
   function selecionarCliente(sugestao: ClienteSugestao) {
     setClienteNome(sugestao.cliente_nome);
     setTelefone(sugestao.cliente_telefone ?? "");
+    setCep(sugestao.cep ? formatarCep(sugestao.cep) : "");
     setEndereco(sugestao.endereco);
     setReferencia(sugestao.referencia ?? "");
     setBairroSelecionado(sugestao.bairro ?? "");
@@ -207,15 +233,24 @@ export default function NovoPedidoForm() {
           />
         </Campo>
 
-        <Campo label="Endereço" htmlFor="endereco" className="sm:col-span-2">
+        <Campo label="CEP (opcional)" htmlFor="cep">
           <input
-            id="endereco"
-            name="endereco"
-            required
-            value={endereco}
-            onChange={(e) => setEndereco(e.target.value)}
+            id="cep"
+            name="cep"
+            inputMode="numeric"
+            placeholder="00000-000"
+            value={cep}
+            onChange={(e) => alterarCep(e.target.value)}
             className={inputClass}
           />
+          {buscandoCep && (
+            <p className="text-xs font-semibold text-slate-400">Buscando endereço...</p>
+          )}
+          {cepNaoEncontrado && apenasDigitos(cep).length === 8 && (
+            <p className="text-xs font-semibold text-amber-600">
+              CEP não encontrado — preencha o endereço manualmente.
+            </p>
+          )}
         </Campo>
 
         <Campo label="Bairro" htmlFor="bairro">
@@ -226,6 +261,17 @@ export default function NovoPedidoForm() {
             opcoes={BAIRROS_GOVERNADOR_VALADARES}
             required
             defaultValue={bairroSelecionado}
+            className={inputClass}
+          />
+        </Campo>
+
+        <Campo label="Endereço" htmlFor="endereco" className="sm:col-span-2">
+          <input
+            id="endereco"
+            name="endereco"
+            required
+            value={endereco}
+            onChange={(e) => setEndereco(e.target.value)}
             className={inputClass}
           />
         </Campo>

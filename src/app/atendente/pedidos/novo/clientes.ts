@@ -7,6 +7,7 @@ export type ClienteSugestao = {
   cliente_telefone: string | null;
   endereco: string;
   bairro: string | null;
+  cep: string | null;
   referencia: string | null;
 };
 
@@ -19,7 +20,7 @@ export async function buscarClientes(termo: string): Promise<ClienteSugestao[]> 
   const supabase = await createClient();
   const { data } = await supabase
     .from("pedidos")
-    .select("cliente_nome, cliente_telefone, endereco, bairro, referencia")
+    .select("cliente_nome, cliente_telefone, endereco, bairro, cep, referencia")
     .ilike("cliente_nome", `%${termoLimpo}%`)
     .order("criado_em", { ascending: false })
     .limit(30);
@@ -39,6 +40,7 @@ export async function buscarClientes(termo: string): Promise<ClienteSugestao[]> 
       cliente_telefone: pedido.cliente_telefone,
       endereco: pedido.endereco,
       bairro: pedido.bairro,
+      cep: pedido.cep,
       referencia: pedido.referencia,
     });
 

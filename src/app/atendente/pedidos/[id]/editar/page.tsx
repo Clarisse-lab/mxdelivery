@@ -60,6 +60,7 @@ export default async function EditarPedidoPage({
         valoresIniciais={{
           cliente_nome: p.cliente_nome,
           cliente_telefone: p.cliente_telefone ?? "",
+          cep: p.cep ?? "",
           endereco: p.endereco,
           bairro: p.bairro ?? "",
           referencia: p.referencia ?? "",

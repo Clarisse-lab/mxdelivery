@@ -38,6 +38,7 @@ export interface Pedido {
   cliente_telefone: string | null;
   endereco: string;
   bairro: string | null;
+  cep: string | null;
   referencia: string | null;
 
   valor_total: number;

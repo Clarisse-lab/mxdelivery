@@ -144,6 +144,7 @@ export default async function PedidoDetalhePage({
           {criador && <InfoCard label="Criado por" valor={criador.nome} />}
           <InfoCard label="Endereço" valor={p.endereco} className="sm:col-span-2 lg:col-span-2" />
           <InfoCard label="Referência" valor={p.referencia ?? "Sem referência"} />
+          {p.cep && <InfoCard label="CEP" valor={p.cep} />}
           {p.observacoes && (
             <InfoCard
               label="Observações"

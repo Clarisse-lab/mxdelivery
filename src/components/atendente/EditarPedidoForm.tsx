@@ -7,6 +7,7 @@ import ComboboxTexto from "@/components/ui/ComboboxTexto";
 import { TIPOS_RECEITA, type NovaReceita, type TipoReceita } from "@/lib/types/database";
 import { TIPO_RECEITA_LABEL } from "@/lib/utils/status";
 import { BAIRROS_GOVERNADOR_VALADARES } from "@/lib/data/bairrosGovernadorValadares";
+import { apenasDigitos, buscarEnderecoPorCep, formatarCep } from "@/lib/utils/cep";
 
 const estadoInicial: EstadoFormEditarPedido = {};
 
@@ -19,6 +20,7 @@ export default function EditarPedidoForm({
   valoresIniciais: {
     cliente_nome: string;
     cliente_telefone: string;
+    cep: string;
     endereco: string;
     bairro: string;
     referencia: string;
@@ -33,6 +35,33 @@ export default function EditarPedidoForm({
   const [receitas, setReceitas] = useState<NovaReceita[]>(
     receitasIniciais.length > 0 ? receitasIniciais : [{ tipo_receita: "comum", quantidade: 1 }],
   );
+
+  const [cep, setCep] = useState(valoresIniciais.cep);
+  const [endereco, setEndereco] = useState(valoresIniciais.endereco);
+  const [bairroSelecionado, setBairroSelecionado] = useState(valoresIniciais.bairro);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepNaoEncontrado, setCepNaoEncontrado] = useState(false);
+
+  function alterarCep(valor: string) {
+    const novoCep = formatarCep(valor);
+    setCep(novoCep);
+
+    if (apenasDigitos(novoCep).length !== 8) return;
+
+    setBuscandoCep(true);
+    buscarEnderecoPorCep(novoCep).then((resultado) => {
+      setBuscandoCep(false);
+
+      if (!resultado) {
+        setCepNaoEncontrado(true);
+        return;
+      }
+
+      setCepNaoEncontrado(false);
+      setBairroSelecionado(resultado.bairro);
+      setEndereco((atual) => (atual.trim() ? atual : resultado.logradouro));
+    });
+  }
 
   function adicionarReceita() {
     setReceitas((atual) => [...atual, { tipo_receita: "comum", quantidade: 1 }]);
@@ -82,23 +111,45 @@ export default function EditarPedidoForm({
             />
           </Campo>
 
+          <Campo label="CEP (opcional)" htmlFor="cep">
+            <input
+              id="cep"
+              name="cep"
+              inputMode="numeric"
+              placeholder="00000-000"
+              value={cep}
+              onChange={(e) => alterarCep(e.target.value)}
+              className={inputClass}
+            />
+            {buscandoCep && (
+              <p className="text-xs font-semibold text-slate-400">Buscando endereço...</p>
+            )}
+            {cepNaoEncontrado && apenasDigitos(cep).length === 8 && (
+              <p className="text-xs font-semibold text-amber-600">
+                CEP não encontrado — preencha o endereço manualmente.
+              </p>
+            )}
+          </Campo>
+
+          <Campo label="Bairro" htmlFor="bairro">
+            <ComboboxTexto
+              key={bairroSelecionado}
+              id="bairro"
+              name="bairro"
+              opcoes={BAIRROS_GOVERNADOR_VALADARES}
+              required
+              defaultValue={bairroSelecionado}
+              className={inputClass}
+            />
+          </Campo>
+
           <Campo label="Endereço" htmlFor="endereco" className="sm:col-span-2">
             <input
               id="endereco"
               name="endereco"
               required
-              defaultValue={valoresIniciais.endereco}
-              className={inputClass}
-            />
-          </Campo>
-
-          <Campo label="Bairro" htmlFor="bairro">
-            <ComboboxTexto
-              id="bairro"
-              name="bairro"
-              opcoes={BAIRROS_GOVERNADOR_VALADARES}
-              required
-              defaultValue={valoresIniciais.bairro}
+              value={endereco}
+              onChange={(e) => setEndereco(e.target.value)}
               className={inputClass}
             />
           </Campo>
