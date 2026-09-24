@@ -140,6 +140,10 @@ export async function criarPedido(
       .insert(receitas.map((r) => ({ ...r, pedido_id: data.id })));
 
     if (erroReceitas) {
+      // Desfaz o pedido já criado — sem isso, ele fica órfão (sem
+      // receita) no banco e um retry do usuário cria um segundo pedido
+      // em cima do primeiro, que continua lá quebrado.
+      await supabase.from("pedidos").delete().eq("id", data.id);
       return { erro: erroReceitas.message };
     }
   }
@@ -156,6 +160,7 @@ export async function criarPedido(
       .single();
 
     if (erroPagamento || !linha) {
+      await supabase.from("pedidos").delete().eq("id", data.id);
       return { erro: erroPagamento?.message ?? "Erro ao registrar pagamento." };
     }
 
