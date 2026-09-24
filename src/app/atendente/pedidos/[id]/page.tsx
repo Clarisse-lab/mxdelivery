@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getPerfilAtual } from "@/lib/auth";
 import PedidoDetalheAcoes from "@/components/atendente/PedidoDetalheAcoes";
@@ -90,6 +91,14 @@ export default async function PedidoDetalhePage({
                 >
                   ⏰ {urgencia.label}
                 </span>
+              )}
+              {podeEditar && (
+                <Link
+                  href={`/atendente/pedidos/${p.id}/editar`}
+                  className="rounded-full bg-white/70 px-3 py-1 text-[11px] font-extrabold text-brand-navy-dark hover:bg-white"
+                >
+                  ✎ Editar pedido
+                </Link>
               )}
             </div>
             <p className="mt-3 text-sm font-semibold text-brand-navy/60">Bairro</p>
