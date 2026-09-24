@@ -16,8 +16,8 @@ export async function ativarConta(
   if (!numero || !/^[0-9]+$/.test(numero)) {
     return { erro: "Digite o número que o admin cadastrou pra você." };
   }
-  if (!senha || senha.length < 6) {
-    return { erro: "A senha precisa ter pelo menos 6 caracteres." };
+  if (!senha || !/^[0-9]{4}$/.test(senha)) {
+    return { erro: "A senha precisa ter exatamente 4 números." };
   }
   if (senha !== confirmarSenha) {
     return { erro: "As senhas não coincidem." };

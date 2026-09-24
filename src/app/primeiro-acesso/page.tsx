@@ -60,13 +60,16 @@ export default function PrimeiroAcessoPage() {
 
         <div className="space-y-1">
           <label htmlFor="senha" className="text-sm font-medium text-slate-700">
-            Nova senha
+            Nova senha (4 números)
           </label>
           <input
             id="senha"
             name="senha"
             type="password"
-            minLength={6}
+            inputMode="numeric"
+            pattern="[0-9]{4}"
+            maxLength={4}
+            placeholder="0000"
             required
             className={inputClass}
           />
@@ -80,7 +83,10 @@ export default function PrimeiroAcessoPage() {
             id="confirmar_senha"
             name="confirmar_senha"
             type="password"
-            minLength={6}
+            inputMode="numeric"
+            pattern="[0-9]{4}"
+            maxLength={4}
+            placeholder="0000"
             required
             className={inputClass}
           />
