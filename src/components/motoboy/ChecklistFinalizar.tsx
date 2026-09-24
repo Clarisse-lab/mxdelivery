@@ -7,15 +7,17 @@ import {
   marcarProblema,
 } from "@/app/motoboy/entregas/[id]/finalizar/actions";
 import { calcularTroco } from "@/lib/utils/troco";
-import { descreverPagamento, formatarMoeda } from "@/lib/utils/status";
-import type { Pedido, Pagamento } from "@/lib/types/database";
+import { descreverPagamento, formatarMoeda, TIPO_RECEITA_LABEL } from "@/lib/utils/status";
+import type { Pedido, Pagamento, Receita } from "@/lib/types/database";
 
 export default function ChecklistFinalizar({
   pedido,
   pagamentos,
+  receitas,
 }: {
   pedido: Pedido;
   pagamentos: Pagamento[];
+  receitas: Receita[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -144,7 +146,14 @@ export default function ChecklistFinalizar({
         <div className="space-y-3">
           {precisaReceita && (
             <ChecklistCheckbox
-              label="Recolhi a receita"
+              label={
+                "Recolhi a receita" +
+                (receitas.length > 0
+                  ? " (" +
+                    receitas.map((r) => `${r.quantidade}x ${TIPO_RECEITA_LABEL[r.tipo_receita]}`).join(" + ") +
+                    ")"
+                  : "")
+              }
               checked={receitaColetada}
               onChange={setReceitaColetada}
             />

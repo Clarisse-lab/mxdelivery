@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import ChecklistFinalizar from "@/components/motoboy/ChecklistFinalizar";
-import type { Pedido, Pagamento } from "@/lib/types/database";
+import type { Pedido, Pagamento, Receita } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -25,10 +25,10 @@ export default async function FinalizarEntregaPage({
     redirect("/motoboy/entregas/" + p.id);
   }
 
-  const { data: pagamentos } = await supabase
-    .from("pagamentos")
-    .select("*")
-    .eq("pedido_id", id);
+  const [{ data: pagamentos }, { data: receitas }] = await Promise.all([
+    supabase.from("pagamentos").select("*").eq("pedido_id", id),
+    supabase.from("receitas").select("*").eq("pedido_id", id),
+  ]);
 
   return (
     <div className="space-y-5 pb-28">
@@ -59,7 +59,11 @@ export default async function FinalizarEntregaPage({
         </div>
       </section>
 
-      <ChecklistFinalizar pedido={p} pagamentos={(pagamentos as Pagamento[]) ?? []} />
+      <ChecklistFinalizar
+        pedido={p}
+        pagamentos={(pagamentos as Pagamento[]) ?? []}
+        receitas={(receitas as Receita[]) ?? []}
+      />
     </div>
   );
 }
