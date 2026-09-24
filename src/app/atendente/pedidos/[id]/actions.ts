@@ -45,3 +45,29 @@ export async function cancelarPedido(pedidoId: string) {
   revalidatePath(`/atendente/pedidos/${pedidoId}`);
   revalidatePath("/atendente/dashboard");
 }
+
+// Exclusão de verdade (não é o "cancelar", que só muda o status).
+// A RLS de pedidos só deixa admin excluir qualquer um; a UI também só
+// mostra esse botão pra admin.
+export async function excluirPedido(pedidoId: string) {
+  const supabase = await createClient();
+
+  const { data: pagamentos } = await supabase
+    .from("pagamentos")
+    .select("comprovante_pix_path")
+    .eq("pedido_id", pedidoId)
+    .not("comprovante_pix_path", "is", null);
+
+  const caminhos = (pagamentos ?? [])
+    .map((p) => p.comprovante_pix_path)
+    .filter((c): c is string => Boolean(c));
+
+  if (caminhos.length > 0) {
+    await supabase.storage.from("comprovantes-pix").remove(caminhos);
+  }
+
+  const { error } = await supabase.from("pedidos").delete().eq("id", pedidoId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/atendente/dashboard");
+}

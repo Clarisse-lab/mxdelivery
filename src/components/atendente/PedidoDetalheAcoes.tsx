@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { reatribuirMotoboy, cancelarPedido } from "@/app/atendente/pedidos/[id]/actions";
+import { reatribuirMotoboy, cancelarPedido, excluirPedido } from "@/app/atendente/pedidos/[id]/actions";
 import type { Perfil, StatusPedido } from "@/lib/types/database";
 
 export default function PedidoDetalheAcoes({
@@ -10,11 +10,13 @@ export default function PedidoDetalheAcoes({
   statusAtual,
   motoboyAtualId,
   motoboys,
+  souAdmin = false,
 }: {
   pedidoId: string;
   statusAtual: StatusPedido;
   motoboyAtualId: string | null;
   motoboys: Perfil[];
+  souAdmin?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -45,6 +47,25 @@ export default function PedidoDetalheAcoes({
         router.refresh();
       } catch (e) {
         setErro(e instanceof Error ? e.message : "Erro ao cancelar pedido.");
+      }
+    });
+  }
+
+  function excluir() {
+    if (
+      !confirm(
+        "Excluir este pedido pra sempre? Isso remove o pedido, receitas, pagamentos e comprovantes — não pode ser desfeito.",
+      )
+    ) {
+      return;
+    }
+    setErro(null);
+    startTransition(async () => {
+      try {
+        await excluirPedido(pedidoId);
+        router.push("/atendente/dashboard");
+      } catch (e) {
+        setErro(e instanceof Error ? e.message : "Erro ao excluir pedido.");
       }
     });
   }
@@ -107,15 +128,27 @@ export default function PedidoDetalheAcoes({
         </p>
       )}
 
-      {podeCancelar && (
-        <div className="mt-5 border-t border-slate-100 pt-5">
-          <button
-            onClick={cancelar}
-            disabled={pending}
-            className="rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-extrabold text-red-600 hover:bg-red-50 disabled:opacity-60"
-          >
-            Cancelar pedido
-          </button>
+      {(podeCancelar || souAdmin) && (
+        <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
+          {podeCancelar && (
+            <button
+              onClick={cancelar}
+              disabled={pending}
+              className="rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-extrabold text-red-600 hover:bg-red-50 disabled:opacity-60"
+            >
+              Cancelar pedido
+            </button>
+          )}
+
+          {souAdmin && (
+            <button
+              onClick={excluir}
+              disabled={pending}
+              className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-red-700 disabled:opacity-60"
+            >
+              Excluir pedido
+            </button>
+          )}
         </div>
       )}
     </section>

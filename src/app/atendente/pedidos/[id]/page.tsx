@@ -290,6 +290,7 @@ export default async function PedidoDetalhePage({
           statusAtual={p.status}
           motoboyAtualId={p.motoboy_id}
           motoboys={listaMotoboys}
+          souAdmin={perfilAtual?.papel === "admin"}
         />
       ) : (
         <p className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-500">
