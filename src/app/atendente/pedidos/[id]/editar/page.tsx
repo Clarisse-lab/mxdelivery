@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getPerfilAtual } from "@/lib/auth";
 import EditarPedidoForm from "@/components/atendente/EditarPedidoForm";
-import type { Pedido, Receita } from "@/lib/types/database";
+import type { Pedido, Receita, Pagamento } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +17,10 @@ export default async function EditarPedidoPage({
   const perfilAtual = await getPerfilAtual();
   if (!perfilAtual) redirect("/login");
 
-  const [{ data: pedido }, { data: receitas }] = await Promise.all([
+  const [{ data: pedido }, { data: receitas }, { data: pagamentos }] = await Promise.all([
     supabase.from("pedidos").select("*").eq("id", id).single(),
     supabase.from("receitas").select("*").eq("pedido_id", id),
+    supabase.from("pagamentos").select("*").eq("pedido_id", id),
   ]);
 
   if (!pedido) notFound();
@@ -35,6 +36,29 @@ export default async function EditarPedidoPage({
     tipo_receita: r.tipo_receita,
     quantidade: r.quantidade,
   }));
+
+  const pagamentosParaForm = await Promise.all(
+    ((pagamentos as Pagamento[]) ?? []).map(async (pg) => {
+      let comprovanteUrl: string | null = null;
+      if (pg.comprovante_pix_path) {
+        const { data } = await supabase.storage
+          .from("comprovantes-pix")
+          .createSignedUrl(pg.comprovante_pix_path, 60);
+        comprovanteUrl = data?.signedUrl ?? null;
+      }
+      return {
+        id: pg.id,
+        forma_pagamento: pg.forma_pagamento,
+        valor: pg.valor,
+        cartao_tipo: pg.cartao_tipo,
+        parcelas: pg.parcelas,
+        troco_para: pg.troco_para,
+        pix_pago: pg.pix_pago,
+        comprovante_pix_path: pg.comprovante_pix_path,
+        comprovanteUrl,
+      };
+    }),
+  );
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -65,8 +89,10 @@ export default async function EditarPedidoPage({
           bairro: p.bairro ?? "",
           referencia: p.referencia ?? "",
           observacoes: p.observacoes ?? "",
+          valor_total: String(p.valor_total),
         }}
         receitasIniciais={receitasParaForm}
+        pagamentosIniciais={pagamentosParaForm}
       />
     </div>
   );
