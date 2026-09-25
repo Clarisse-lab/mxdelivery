@@ -13,12 +13,17 @@ export default async function HistoricoPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Ordenado do mais recente pro mais antigo e limitado às últimas 200
+  // entregas — sem isso, a consulta buscava TODO o histórico do motoboy
+  // desde sempre, ficando mais lenta a cada mês que passa. Como a lista
+  // vem sempre do mais recente, o resumo de "hoje" continua exato.
   const { data: pedidos } = await supabase
     .from("pedidos")
     .select("*")
     .eq("motoboy_id", user.id)
     .in("status", ["entregue", "problema"])
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(200);
 
   const lista = (pedidos as Pedido[]) ?? [];
 
