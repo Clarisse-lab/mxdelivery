@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import IniciarRotaButton from "@/components/motoboy/IniciarRotaButton";
 import PegarEntregaButton from "@/components/motoboy/PegarEntregaButton";
+import DevolverPedidoButton from "@/components/motoboy/DevolverPedidoButton";
 import AcaoFixa from "@/components/motoboy/AcaoFixa";
 import {
   TIPO_RECEITA_LABEL,
@@ -195,18 +196,24 @@ export default async function EntregaDetalhePage({
 
       {ehMinha && p.status === "pendente" && (
         <AcaoFixa>
-          <IniciarRotaButton pedidoId={p.id} endereco={p.endereco} bairro={p.bairro} cep={p.cep} />
+          <div className="space-y-2.5">
+            <IniciarRotaButton pedidoId={p.id} endereco={p.endereco} bairro={p.bairro} cep={p.cep} />
+            <DevolverPedidoButton pedidoId={p.id} />
+          </div>
         </AcaoFixa>
       )}
 
       {ehMinha && p.status === "em_rota" && (
         <AcaoFixa>
-          <Link
-            href={"/motoboy/entregas/" + p.id + "/finalizar"}
-            className="block w-full rounded-xl bg-brand-navy py-3.5 text-center text-base font-black text-white shadow-[0_10px_24px_rgba(11,49,95,.18)]"
-          >
-            Finalizar entrega
-          </Link>
+          <div className="space-y-2.5">
+            <Link
+              href={"/motoboy/entregas/" + p.id + "/finalizar"}
+              className="block w-full rounded-xl bg-brand-navy py-3.5 text-center text-base font-black text-white shadow-[0_10px_24px_rgba(11,49,95,.18)]"
+            >
+              Finalizar entrega
+            </Link>
+            <DevolverPedidoButton pedidoId={p.id} />
+          </div>
         </AcaoFixa>
       )}
     </div>
