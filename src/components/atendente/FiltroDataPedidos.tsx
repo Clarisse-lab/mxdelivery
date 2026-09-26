@@ -15,7 +15,7 @@ export default function FiltroDataPedidos({
             htmlFor="data-historico"
             className="block text-[10px] font-black uppercase tracking-[0.12em] text-slate-400"
           >
-            Ver pedidos de outro dia
+            Filtrar por dia
           </label>
           <input
             id="data-historico"
