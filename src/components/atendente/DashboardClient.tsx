@@ -16,6 +16,7 @@ export default function DashboardClient({
   perfilNome,
   papel,
   hoje,
+  secaoHistorico,
 }: {
   pedidosIniciais: Pedido[];
   motoboys: Perfil[];
@@ -23,6 +24,7 @@ export default function DashboardClient({
   perfilNome: string;
   papel: Papel;
   hoje: string;
+  secaoHistorico?: React.ReactNode;
 }) {
   const pedidos = usePedidosRealtime(pedidosIniciais);
   const pedidosDoResumo = papel === "admin" ? pedidos : pedidos.filter((p) => p.criado_por === perfilId);
@@ -67,6 +69,8 @@ export default function DashboardClient({
       <ExportarRelatorio hoje={hoje} />
 
       <KanbanBoard pedidos={pedidos} motoboys={motoboys} />
+
+      {secaoHistorico}
     </div>
   );
 }
