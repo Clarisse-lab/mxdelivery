@@ -1,4 +1,4 @@
-import type { Pedido } from "@/lib/types/database";
+import type { Pedido, Perfil } from "@/lib/types/database";
 
 export function ehHoje(dataIso: string | null): boolean {
   if (!dataIso) return false;
@@ -7,6 +7,7 @@ export function ehHoje(dataIso: string | null): boolean {
 
 export interface ResumoDia {
   totalHoje: number;
+  valorVendidoHoje: number;
   entreguesHoje: number;
   pendentes: number;
   emRota: number;
@@ -22,6 +23,7 @@ export interface ResumoDia {
 // que já existem em pedidos, sem precisar de tabela nova.
 export function calcularResumo(pedidos: Pedido[]): ResumoDia {
   const criadosHoje = pedidos.filter((p) => ehHoje(p.criado_em));
+  const vendidosHoje = criadosHoje.filter((p) => p.status !== "cancelado");
   const entreguesHoje = pedidos.filter((p) => p.status === "entregue" && ehHoje(p.entregue_em));
 
   const tempos = entreguesHoje
@@ -49,6 +51,7 @@ export function calcularResumo(pedidos: Pedido[]): ResumoDia {
 
   return {
     totalHoje: criadosHoje.length,
+    valorVendidoHoje: vendidosHoje.reduce((soma, p) => soma + p.valor_total, 0),
     entreguesHoje: entreguesHoje.length,
     pendentes: pedidos.filter((p) => p.status === "pendente").length,
     emRota: pedidos.filter((p) => p.status === "em_rota").length,
@@ -57,6 +60,35 @@ export function calcularResumo(pedidos: Pedido[]): ResumoDia {
     bairrosMaisAtendidos,
     motoboysAtivos,
   };
+}
+
+export interface VendaPorAtendente {
+  atendenteId: string;
+  nome: string;
+  total: number;
+}
+
+// Quanto cada atendente vendeu hoje (soma do valor_total dos pedidos que
+// ele criou, exceto cancelados) — usado só na visão do admin.
+export function calcularVendasPorAtendente(
+  pedidos: Pedido[],
+  atendentes: Perfil[],
+): VendaPorAtendente[] {
+  const nomePorId = new Map(atendentes.map((a) => [a.id, a.nome]));
+  const totalPorId = new Map<string, number>();
+
+  for (const p of pedidos) {
+    if (!p.criado_por || p.status === "cancelado" || !ehHoje(p.criado_em)) continue;
+    totalPorId.set(p.criado_por, (totalPorId.get(p.criado_por) ?? 0) + p.valor_total);
+  }
+
+  return [...totalPorId.entries()]
+    .map(([atendenteId, total]) => ({
+      atendenteId,
+      nome: nomePorId.get(atendenteId) ?? "Atendente removido",
+      total,
+    }))
+    .sort((a, b) => b.total - a.total);
 }
 
 export function formatarMinutos(minutos: number | null): string {

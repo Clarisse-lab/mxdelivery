@@ -30,7 +30,7 @@ export default async function DashboardPage({
   // tem o filtro de data logo abaixo, que busca só aquele dia específico.
   const { inicio } = limitesDoDia(hoje);
 
-  const [{ data: pedidos }, { data: motoboys }] = await Promise.all([
+  const [{ data: pedidos }, { data: motoboys }, { data: atendentes }] = await Promise.all([
     supabase
       .from("pedidos")
       .select("*")
@@ -42,9 +42,15 @@ export default async function DashboardPage({
       .select("*")
       .eq("papel", "motoboy")
       .order("nome"),
+    supabase
+      .from("perfis")
+      .select("*")
+      .eq("papel", "atendente")
+      .order("nome"),
   ]);
 
   const listaMotoboys = (motoboys as Perfil[]) ?? [];
+  const listaAtendentes = (atendentes as Perfil[]) ?? [];
   const motoboysPorId = new Map(listaMotoboys.map((m) => [m.id, m]));
 
   const { data: dataParam } = await searchParams;
@@ -107,6 +113,7 @@ export default async function DashboardPage({
     <DashboardClient
       pedidosIniciais={(pedidos as Pedido[]) ?? []}
       motoboys={listaMotoboys}
+      atendentes={listaAtendentes}
       perfilId={perfilAtual.id}
       perfilNome={perfilAtual.nome}
       papel={perfilAtual.papel}

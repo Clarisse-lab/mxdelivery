@@ -1,7 +1,18 @@
-import { calcularResumo, formatarMinutos } from "@/lib/utils/resumo";
+import { calcularResumo, formatarMinutos, type VendaPorAtendente } from "@/lib/utils/resumo";
+import { formatarMoeda } from "@/lib/utils/status";
 import type { Pedido } from "@/lib/types/database";
 
-export default function ResumoDia({ pedidos, titulo }: { pedidos: Pedido[]; titulo: string }) {
+export default function ResumoDia({
+  pedidos,
+  titulo,
+  mostrarValores = false,
+  porAtendente,
+}: {
+  pedidos: Pedido[];
+  titulo: string;
+  mostrarValores?: boolean;
+  porAtendente?: VendaPorAtendente[];
+}) {
   const resumo = calcularResumo(pedidos);
 
   return (
@@ -18,6 +29,9 @@ export default function ResumoDia({ pedidos, titulo }: { pedidos: Pedido[]; titu
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Stat valor={resumo.totalHoje} rotulo="Pedidos hoje" tom="navy" />
+        {mostrarValores && (
+          <Stat valor={formatarMoeda(resumo.valorVendidoHoje)} rotulo="Total vendido hoje" tom="gold" />
+        )}
         <Stat valor={resumo.entreguesHoje} rotulo="Entregues" tom="green" />
         <Stat valor={resumo.emRota} rotulo="Em rota" tom="blue" />
         <Stat valor={resumo.pendentes} rotulo="Pendentes" tom="yellow" />
@@ -45,6 +59,25 @@ export default function ResumoDia({ pedidos, titulo }: { pedidos: Pedido[]; titu
           </div>
         </div>
       )}
+
+      {porAtendente && porAtendente.length > 0 && (
+        <div className="mt-5 border-t border-slate-100 pt-4">
+          <p className="mb-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+            Vendas por atendente hoje
+          </p>
+          <div className="space-y-1.5">
+            {porAtendente.map((a) => (
+              <div
+                key={a.atendenteId}
+                className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/70 px-3.5 py-2.5"
+              >
+                <span className="text-sm font-semibold text-brand-navy-dark">{a.nome}</span>
+                <span className="text-sm font-black text-brand-gold-dark">{formatarMoeda(a.total)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -56,7 +89,7 @@ function Stat({
 }: {
   valor: string | number;
   rotulo: string;
-  tom: "green" | "navy" | "blue" | "yellow" | "red" | "neutral";
+  tom: "green" | "navy" | "blue" | "yellow" | "red" | "neutral" | "gold";
 }) {
   const styles = {
     green: "bg-emerald-50 text-emerald-800 border-emerald-100/80",
@@ -65,6 +98,7 @@ function Stat({
     yellow: "bg-brand-gold-soft text-brand-navy-dark border-brand-gold/35",
     red: "bg-red-50 text-red-700 border-red-100",
     neutral: "bg-slate-50 text-slate-900 border-slate-100",
+    gold: "bg-brand-gold text-brand-navy-dark border-brand-gold",
   }[tom];
 
   return (

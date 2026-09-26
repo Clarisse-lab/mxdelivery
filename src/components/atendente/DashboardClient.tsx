@@ -7,11 +7,13 @@ import ResumoDia from "@/components/ResumoDia";
 import AlertaNotificacoes from "@/components/AlertaNotificacoes";
 import ExportarRelatorio from "./ExportarRelatorio";
 import { PAPEL_LABEL } from "@/lib/utils/status";
+import { calcularVendasPorAtendente } from "@/lib/utils/resumo";
 import type { Papel, Pedido, Perfil } from "@/lib/types/database";
 
 export default function DashboardClient({
   pedidosIniciais,
   motoboys,
+  atendentes,
   perfilId,
   perfilNome,
   papel,
@@ -20,6 +22,7 @@ export default function DashboardClient({
 }: {
   pedidosIniciais: Pedido[];
   motoboys: Perfil[];
+  atendentes: Perfil[];
   perfilId: string;
   perfilNome: string;
   papel: Papel;
@@ -28,6 +31,7 @@ export default function DashboardClient({
 }) {
   const pedidos = usePedidosRealtime(pedidosIniciais);
   const pedidosDoResumo = papel === "admin" ? pedidos : pedidos.filter((p) => p.criado_por === perfilId);
+  const porAtendente = papel === "admin" ? calcularVendasPorAtendente(pedidos, atendentes) : undefined;
 
   return (
     <div className="space-y-6">
@@ -64,6 +68,8 @@ export default function DashboardClient({
       <ResumoDia
         pedidos={pedidosDoResumo}
         titulo={papel === "admin" ? "Resumo da farmácia hoje" : "Meu resumo de hoje"}
+        mostrarValores
+        porAtendente={porAtendente}
       />
 
       <ExportarRelatorio hoje={hoje} />
