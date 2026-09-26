@@ -76,6 +76,7 @@ export default async function MotoboysPage() {
           definirAtivo={definirAtivo}
           excluirConvite={excluirConvite}
           excluirConta={excluirConta}
+          verTelaBase="/atendente/motoboys"
           vazio="Nenhum motoboy cadastrado ainda."
           rotulo="Motoboy"
         />

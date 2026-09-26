@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Convite, Perfil } from "@/lib/types/database";
 
 export default function ContasList({
@@ -10,6 +11,7 @@ export default function ContasList({
   definirAtivo,
   excluirConvite,
   excluirConta,
+  verTelaBase,
   vazio = "Nenhuma conta cadastrada ainda.",
   rotulo = "Conta",
 }: {
@@ -18,6 +20,7 @@ export default function ContasList({
   definirAtivo: (id: string, ativo: boolean) => Promise<void>;
   excluirConvite?: (numero: string) => Promise<void>;
   excluirConta?: (id: string) => Promise<void>;
+  verTelaBase?: string;
   vazio?: string;
   rotulo?: string;
 }) {
@@ -165,6 +168,15 @@ export default function ContasList({
               >
                 {c.ativo ? "Desativar" : "Reativar"}
               </button>
+
+              {verTelaBase && c.ativo && (
+                <Link
+                  href={`${verTelaBase}/${c.id}/visualizar`}
+                  className="rounded-xl border border-brand-navy/15 bg-white px-3 py-2 text-xs font-extrabold text-brand-navy hover:bg-brand-navy/5"
+                >
+                  Ver tela
+                </Link>
+              )}
 
               {excluirConta && (
                 <button
