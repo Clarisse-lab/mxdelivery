@@ -69,6 +69,14 @@ export default function PedidoCard({
         </div>
       )}
 
+      {pedido.observacoes && (
+        <div className="mt-3 rounded-lg bg-brand-gold-soft/60 px-2.5 py-1.5">
+          <p className="line-clamp-2 text-[11px] font-semibold leading-4 text-brand-navy-dark/80">
+            {pedido.observacoes}
+          </p>
+        </div>
+      )}
+
       <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[10px]">
         <span className="font-semibold text-slate-400">{motoboy ? motoboy.nome : "Aguardando motoboy"}</span>
         <span className="font-bold text-brand-navy/55">{tempoDesde(pedido.criado_em)}</span>
