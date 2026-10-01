@@ -67,6 +67,14 @@ export default function EntregaCard({
           </p>
         )}
 
+        {pedido.observacoes && (
+          <div className="mt-3 rounded-lg bg-brand-gold-soft/60 px-2.5 py-1.5">
+            <p className="line-clamp-2 text-[11px] font-semibold leading-4 text-brand-navy-dark/80">
+              {pedido.observacoes}
+            </p>
+          </div>
+        )}
+
         <div className="mt-3 flex items-center justify-between text-[11px]">
           <span className="font-medium text-slate-400">{tempoDesde(pedido.criado_em)}</span>
           <span className="font-extrabold text-brand-navy">Ver detalhes →</span>
