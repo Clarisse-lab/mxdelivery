@@ -9,6 +9,7 @@ import {
   type TipoReceita,
   type FormaPagamento,
 } from "@/lib/types/database";
+import { enviarPushParaPerfis } from "@/lib/push";
 
 export type EstadoFormPedido = { erro?: string };
 
@@ -128,7 +129,7 @@ export async function criarPedido(
       observacoes: (formData.get("observacoes") as string)?.trim() || null,
       criado_por: user.id,
     })
-    .select("id")
+    .select("id, numero")
     .single();
 
   if (error || !data) {
@@ -180,6 +181,31 @@ export async function criarPedido(
     if (!erroUpload) {
       await supabase.from("pagamentos").update({ comprovante_pix_path: caminho }).eq("id", linha.id);
     }
+  }
+
+  // Avisa com notificação (som + vibração) todo mundo que não foi quem
+  // criou o pedido — atendentes/admin pra acompanhar, motoboys pra saber
+  // que tem entrega nova na fila. Funciona mesmo com o app fechado.
+  // Nunca deve travar a criação do pedido, então qualquer erro aqui é
+  // só ignorado.
+  try {
+    const { data: destinatarios } = await supabase
+      .from("perfis")
+      .select("id")
+      .eq("ativo", true)
+      .neq("id", user.id);
+
+    await enviarPushParaPerfis(
+      (destinatarios ?? []).map((d) => d.id),
+      {
+        title: "Novo pedido",
+        body: `#${data.numero} · ${bairro}`,
+        tag: `pedido-${data.id}`,
+        url: "/",
+      },
+    );
+  } catch {
+    // ver nota acima
   }
 
   redirect(`/atendente/pedidos/${data.id}`);

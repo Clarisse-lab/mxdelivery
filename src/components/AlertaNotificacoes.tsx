@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { notificacoesSuportadas, pedirPermissaoNotificacao, permissaoNotificacao } from "@/lib/utils/notificacoes";
 import { tocarBeep } from "@/lib/utils/beep";
+import { inscreverPush } from "@/lib/utils/pushClient";
 
 const CHAVE_DISPENSADO = "mx-alerta-notificacoes-dispensado";
 
@@ -46,6 +47,14 @@ export default function AlertaNotificacoes({ mensagem }: { mensagem: string }) {
   async function ativar() {
     await pedirPermissaoNotificacao();
     tocarBeep();
+    // Além do alerta sonoro na aba aberta, assina a notificação push de
+    // verdade — essa chega mesmo com o app fechado. Se o aparelho/navegador
+    // não suportar, falha em silêncio e o alerta sonoro continua valendo.
+    try {
+      await inscreverPush();
+    } catch {
+      // ver nota acima
+    }
     setDispensadoAgora(true);
   }
 
