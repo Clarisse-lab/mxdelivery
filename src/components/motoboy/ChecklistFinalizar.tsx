@@ -33,9 +33,7 @@ export default function ChecklistFinalizar({
 
   const precisaReceita = pedido.precisa_receita;
 
-  const pendentesDeCobranca = pagamentos.filter(
-    (pg) => pg.forma_pagamento !== "pix" || pg.pix_pago !== true,
-  );
+  const pendentesDeCobranca = pagamentos.filter((pg) => pg.pago !== true);
   const tudoJaPago = pagamentos.length > 0 && pendentesDeCobranca.length === 0;
 
   const linhasComTroco = pagamentos.filter(

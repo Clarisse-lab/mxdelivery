@@ -188,7 +188,7 @@ export default async function PedidoDetalhePage({
           {listaPagamentos.map((pg) => {
             const troco = calcularTroco(pg.valor, pg.troco_para);
             const comprovante = comprovantes.find((c) => c.id === pg.id);
-            const jaPago = pg.forma_pagamento === "pix" && pg.pix_pago === true;
+            const jaPago = pg.pago === true;
 
             return (
               <div

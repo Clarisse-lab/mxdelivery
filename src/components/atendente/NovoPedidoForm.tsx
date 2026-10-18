@@ -34,7 +34,7 @@ type LinhaPagamento = {
   parcelas: string;
   troco: boolean;
   trocoPara: string;
-  pixPago: boolean;
+  pago: boolean;
 };
 
 function linhaVazia(): LinhaPagamento {
@@ -46,7 +46,7 @@ function linhaVazia(): LinhaPagamento {
     parcelas: "2",
     troco: false,
     trocoPara: "",
-    pixPago: false,
+    pago: false,
   };
 }
 
@@ -175,7 +175,7 @@ export default function NovoPedidoForm() {
     cartao_tipo: l.forma_pagamento === "cartao" ? l.cartaoTipo : null,
     parcelas: l.forma_pagamento === "cartao" && l.parcelar ? Number(l.parcelas) || 2 : null,
     troco_para: l.forma_pagamento === "dinheiro" && l.troco ? Number(l.trocoPara) || null : null,
-    pix_pago: l.forma_pagamento === "pix" ? l.pixPago : null,
+    pago: l.forma_pagamento ? l.pago : null,
   }));
 
   return (
@@ -469,6 +469,15 @@ export default function NovoPedidoForm() {
                     className={inputClass}
                   />
                 )}
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={linha.pago}
+                    onChange={(e) => atualizarLinha(index, { pago: e.target.checked })}
+                    className="h-5 w-5 accent-brand-navy"
+                  />
+                  Já foi pago
+                </label>
               </div>
             )}
 
@@ -477,8 +486,8 @@ export default function NovoPedidoForm() {
                 <label className="flex items-center gap-2 text-sm text-slate-700">
                   <input
                     type="checkbox"
-                    checked={linha.pixPago}
-                    onChange={(e) => atualizarLinha(index, { pixPago: e.target.checked })}
+                    checked={linha.pago}
+                    onChange={(e) => atualizarLinha(index, { pago: e.target.checked })}
                     className="h-5 w-5 accent-brand-navy"
                   />
                   Já foi pago
@@ -506,13 +515,29 @@ export default function NovoPedidoForm() {
                 <label className="flex items-center gap-2 text-sm text-slate-700">
                   <input
                     type="checkbox"
-                    checked={linha.troco}
-                    onChange={(e) => atualizarLinha(index, { troco: e.target.checked })}
+                    checked={linha.pago}
+                    onChange={(e) =>
+                      atualizarLinha(index, {
+                        pago: e.target.checked,
+                        troco: e.target.checked ? false : linha.troco,
+                      })
+                    }
                     className="h-5 w-5 accent-brand-navy"
                   />
-                  Precisa de troco
+                  Já foi pago
                 </label>
-                {linha.troco && (
+                {!linha.pago && (
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={linha.troco}
+                      onChange={(e) => atualizarLinha(index, { troco: e.target.checked })}
+                      className="h-5 w-5 accent-brand-navy"
+                    />
+                    Precisa de troco
+                  </label>
+                )}
+                {linha.troco && !linha.pago && (
                   <>
                     <input
                       type="number"

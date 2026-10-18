@@ -21,7 +21,7 @@ type PagamentoEditado = {
   cartao_tipo: "credito" | "debito" | null;
   parcelas: number | null;
   troco_para: number | null;
-  pix_pago: boolean | null;
+  pago: boolean | null;
   comprovante_pix_path: string | null;
 };
 
@@ -56,7 +56,7 @@ function parsePagamentos(raw: string | null): PagamentoEditado[] {
         typeof p.troco_para === "number" && p.troco_para > 0
           ? Math.round(p.troco_para * 100) / 100
           : null,
-      pix_pago: typeof p.pix_pago === "boolean" ? p.pix_pago : null,
+      pago: typeof p.pago === "boolean" ? p.pago : null,
       comprovante_pix_path: typeof p.comprovante_pix_path === "string" ? p.comprovante_pix_path : null,
     }));
 }
@@ -224,7 +224,7 @@ export async function editarPedido(
         cartao_tipo: pg.cartao_tipo,
         parcelas: pg.parcelas,
         troco_para: pg.troco_para,
-        pix_pago: pg.pix_pago,
+        pago: pg.pago,
         pedido_id: pedidoId,
       })
       .select("id")

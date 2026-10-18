@@ -54,7 +54,7 @@ export default async function EditarPedidoPage({
         cartao_tipo: pg.cartao_tipo,
         parcelas: pg.parcelas,
         troco_para: pg.troco_para,
-        pix_pago: pg.pix_pago,
+        pago: pg.pago,
         comprovante_pix_path: pg.comprovante_pix_path,
         comprovanteUrl,
       };

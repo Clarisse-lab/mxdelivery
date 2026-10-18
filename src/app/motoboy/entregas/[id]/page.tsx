@@ -139,7 +139,7 @@ export default async function EntregaDetalhePage({
               )}
               {listaPagamentos.map((pg) => {
                 const troco = calcularTroco(pg.valor, pg.troco_para);
-                const cobrar = pg.forma_pagamento !== "pix" || pg.pix_pago !== true;
+                const cobrar = pg.pago !== true;
                 return (
                   <div
                     key={pg.id}

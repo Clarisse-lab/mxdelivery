@@ -35,7 +35,7 @@ type LinhaPagamento = {
   parcelas: string;
   troco: boolean;
   trocoPara: string;
-  pixPago: boolean;
+  pago: boolean;
   comprovantePath: string | null;
   comprovanteUrl: string | null;
 };
@@ -49,7 +49,7 @@ function linhaVazia(): LinhaPagamento {
     parcelas: "2",
     troco: false,
     trocoPara: "",
-    pixPago: false,
+    pago: false,
     comprovantePath: null,
     comprovanteUrl: null,
   };
@@ -62,7 +62,7 @@ export type PagamentoInicial = {
   cartao_tipo: CartaoTipo | null;
   parcelas: number | null;
   troco_para: number | null;
-  pix_pago: boolean | null;
+  pago: boolean | null;
   comprovante_pix_path: string | null;
   comprovanteUrl: string | null;
 };
@@ -109,7 +109,7 @@ export default function EditarPedidoForm({
           parcelas: pg.parcelas != null ? String(pg.parcelas) : "2",
           troco: pg.troco_para != null,
           trocoPara: pg.troco_para != null ? String(pg.troco_para) : "",
-          pixPago: pg.pix_pago === true,
+          pago: pg.pago === true,
           comprovantePath: pg.comprovante_pix_path,
           comprovanteUrl: pg.comprovanteUrl,
         }))
@@ -151,7 +151,7 @@ export default function EditarPedidoForm({
     cartao_tipo: l.forma_pagamento === "cartao" ? l.cartaoTipo : null,
     parcelas: l.forma_pagamento === "cartao" && l.parcelar ? Number(l.parcelas) || 2 : null,
     troco_para: l.forma_pagamento === "dinheiro" && l.troco ? Number(l.trocoPara) || null : null,
-    pix_pago: l.forma_pagamento === "pix" ? l.pixPago : null,
+    pago: l.forma_pagamento ? l.pago : null,
     comprovante_pix_path: l.forma_pagamento === "pix" ? l.comprovantePath : null,
   }));
 
@@ -460,6 +460,15 @@ export default function EditarPedidoForm({
                     className={inputClass}
                   />
                 )}
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={linha.pago}
+                    onChange={(e) => atualizarLinha(index, { pago: e.target.checked })}
+                    className="h-5 w-5 accent-brand-navy"
+                  />
+                  Já foi pago
+                </label>
               </div>
             )}
 
@@ -468,8 +477,8 @@ export default function EditarPedidoForm({
                 <label className="flex items-center gap-2 text-sm text-slate-700">
                   <input
                     type="checkbox"
-                    checked={linha.pixPago}
-                    onChange={(e) => atualizarLinha(index, { pixPago: e.target.checked })}
+                    checked={linha.pago}
+                    onChange={(e) => atualizarLinha(index, { pago: e.target.checked })}
                     className="h-5 w-5 accent-brand-navy"
                   />
                   Já foi pago
@@ -507,13 +516,29 @@ export default function EditarPedidoForm({
                 <label className="flex items-center gap-2 text-sm text-slate-700">
                   <input
                     type="checkbox"
-                    checked={linha.troco}
-                    onChange={(e) => atualizarLinha(index, { troco: e.target.checked })}
+                    checked={linha.pago}
+                    onChange={(e) =>
+                      atualizarLinha(index, {
+                        pago: e.target.checked,
+                        troco: e.target.checked ? false : linha.troco,
+                      })
+                    }
                     className="h-5 w-5 accent-brand-navy"
                   />
-                  Precisa de troco
+                  Já foi pago
                 </label>
-                {linha.troco && (
+                {!linha.pago && (
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={linha.troco}
+                      onChange={(e) => atualizarLinha(index, { troco: e.target.checked })}
+                      className="h-5 w-5 accent-brand-navy"
+                    />
+                    Precisa de troco
+                  </label>
+                )}
+                {linha.troco && !linha.pago && (
                   <>
                     <input
                       type="number"

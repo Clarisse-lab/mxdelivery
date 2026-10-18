@@ -38,18 +38,19 @@ export const TIPO_RECEITA_LABEL: Record<TipoReceita, string> = {
 };
 
 export function descreverPagamento(p: Pagamento | NovoPagamentoDescricao): string {
+  let base: string;
   if (p.forma_pagamento === "cartao") {
     const tipo = p.cartao_tipo === "debito" ? "Débito" : "Crédito";
-    const base = `Cartão · ${tipo}`;
-    return p.parcelas ? `${base} · ${p.parcelas}x` : base;
+    base = p.parcelas ? `Cartão · ${tipo} · ${p.parcelas}x` : `Cartão · ${tipo}`;
+  } else if (p.forma_pagamento === "pix") {
+    base = "Pix";
+  } else {
+    base = "Dinheiro";
   }
-  if (p.forma_pagamento === "pix") {
-    return p.pix_pago ? "Pix · Pago" : "Pix · Pendente";
-  }
-  return "Dinheiro";
+  return p.pago ? `${base} · Pago` : base;
 }
 
-type NovoPagamentoDescricao = Pick<Pagamento, "forma_pagamento" | "cartao_tipo" | "parcelas" | "pix_pago">;
+type NovoPagamentoDescricao = Pick<Pagamento, "forma_pagamento" | "cartao_tipo" | "parcelas" | "pago">;
 
 export function descreverPagamentos(pagamentos: Pagamento[]): string {
   if (pagamentos.length === 0) return "—";

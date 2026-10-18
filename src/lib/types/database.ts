@@ -93,7 +93,7 @@ export interface Pagamento {
   cartao_tipo: CartaoTipo | null;
   parcelas: number | null;
   troco_para: number | null;
-  pix_pago: boolean | null;
+  pago: boolean | null;
   comprovante_pix_path: string | null;
 }
 
@@ -103,5 +103,5 @@ export type NovoPagamento = {
   cartao_tipo: CartaoTipo | null;
   parcelas: number | null;
   troco_para: number | null;
-  pix_pago: boolean | null;
+  pago: boolean | null;
 };

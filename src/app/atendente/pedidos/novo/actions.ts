@@ -75,7 +75,7 @@ function parsePagamentos(raw: string | null): NovoPagamento[] {
         typeof p.troco_para === "number" && p.troco_para > 0
           ? Math.round(p.troco_para * 100) / 100
           : null,
-      pix_pago: typeof p.pix_pago === "boolean" ? p.pix_pago : null,
+      pago: typeof p.pago === "boolean" ? p.pago : null,
     }));
 }
 
