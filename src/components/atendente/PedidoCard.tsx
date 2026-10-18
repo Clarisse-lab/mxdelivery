@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import type { Pedido, Perfil } from "@/lib/types/database";
-import { tempoDesde } from "@/lib/utils/tempo";
+import { tempoDesde, formatarData } from "@/lib/utils/tempo";
 import { URGENCIA_UI, type NivelUrgencia } from "@/lib/utils/atraso";
 
 const STATUS: Record<Pedido["status"], { bar: string; badge: string; label: string }> = {
+  agendado: { bar: "bg-violet-500", badge: "bg-violet-50 text-violet-800", label: "Agendado" },
   pendente: { bar: "bg-brand-gold", badge: "bg-amber-50 text-amber-800", label: "Pendente" },
   em_rota: { bar: "bg-blue-500", badge: "bg-blue-50 text-brand-blue", label: "Em rota" },
   entregue: { bar: "bg-emerald-500", badge: "bg-emerald-50 text-emerald-700", label: "Entregue" },
@@ -79,7 +80,11 @@ export default function PedidoCard({
 
       <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[10px]">
         <span className="font-semibold text-slate-400">{motoboy ? motoboy.nome : "Aguardando motoboy"}</span>
-        <span className="font-bold text-brand-navy/55">{tempoDesde(pedido.criado_em)}</span>
+        <span className="font-bold text-brand-navy/55">
+          {pedido.status === "agendado" && pedido.agendado_para
+            ? `Agendado p/ ${formatarData(pedido.agendado_para)}`
+            : tempoDesde(pedido.criado_em)}
+        </span>
       </div>
     </Link>
   );

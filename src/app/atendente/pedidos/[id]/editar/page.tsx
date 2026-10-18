@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getPerfilAtual } from "@/lib/auth";
 import EditarPedidoForm from "@/components/atendente/EditarPedidoForm";
+import { paraDatetimeLocalBrasilia } from "@/lib/utils/dataLocal";
 import type { Pedido, Receita, Pagamento } from "@/lib/types/database";
 
 export const dynamic = "force-dynamic";
@@ -90,6 +91,8 @@ export default async function EditarPedidoPage({
           referencia: p.referencia ?? "",
           observacoes: p.observacoes ?? "",
           valor_total: String(p.valor_total),
+          status: p.status,
+          agendado_para: p.agendado_para ? paraDatetimeLocalBrasilia(p.agendado_para) : "",
         }}
         receitasIniciais={receitasParaForm}
         pagamentosIniciais={pagamentosParaForm}

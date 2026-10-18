@@ -115,6 +115,23 @@ export async function criarPedido(
     return { erro: "Adicione ao menos uma receita ou desmarque \"Precisa de receita\"." };
   }
 
+  // O <input type="datetime-local"> manda a hora sem fuso (ex.:
+  // "2026-10-18T14:30") — fixa explicitamente como horário de Brasília,
+  // senão o servidor (que roda em UTC) entenderia esse horário como UTC
+  // e o agendamento ficaria 3h adiantado.
+  const agendadoParaRaw = (formData.get("agendado_para") as string)?.trim();
+  let agendadoPara: string | null = null;
+  if (agendadoParaRaw) {
+    const data = new Date(`${agendadoParaRaw}:00-03:00`);
+    if (Number.isNaN(data.getTime())) {
+      return { erro: "Data de agendamento inválida." };
+    }
+    if (data.getTime() <= Date.now()) {
+      return { erro: "A data do agendamento precisa ser no futuro." };
+    }
+    agendadoPara = data.toISOString();
+  }
+
   const { data, error } = await supabase
     .from("pedidos")
     .insert({
@@ -128,6 +145,8 @@ export async function criarPedido(
       precisa_receita: precisaReceita,
       observacoes: (formData.get("observacoes") as string)?.trim() || null,
       criado_por: user.id,
+      agendado_para: agendadoPara,
+      ...(agendadoPara ? { status: "agendado" } : {}),
     })
     .select("id, numero")
     .single();
@@ -187,25 +206,28 @@ export async function criarPedido(
   // criou o pedido — atendentes/admin pra acompanhar, motoboys pra saber
   // que tem entrega nova na fila. Funciona mesmo com o app fechado.
   // Nunca deve travar a criação do pedido, então qualquer erro aqui é
-  // só ignorado.
-  try {
-    const { data: destinatarios } = await supabase
-      .from("perfis")
-      .select("id")
-      .eq("ativo", true)
-      .neq("id", user.id);
+  // só ignorado. Pedido agendado não avisa agora — só quando entrar na
+  // fila de verdade, no horário marcado (ver migration 0020).
+  if (!agendadoPara) {
+    try {
+      const { data: destinatarios } = await supabase
+        .from("perfis")
+        .select("id")
+        .eq("ativo", true)
+        .neq("id", user.id);
 
-    await enviarPushParaPerfis(
-      (destinatarios ?? []).map((d) => d.id),
-      {
-        title: "Novo pedido",
-        body: `#${data.numero} · ${bairro}`,
-        tag: `pedido-${data.id}`,
-        url: "/",
-      },
-    );
-  } catch {
-    // ver nota acima
+      await enviarPushParaPerfis(
+        (destinatarios ?? []).map((d) => d.id),
+        {
+          title: "Novo pedido",
+          body: `#${data.numero} · ${bairro}`,
+          tag: `pedido-${data.id}`,
+          url: "/",
+        },
+      );
+    } catch {
+      // ver nota acima
+    }
   }
 
   redirect(`/atendente/pedidos/${data.id}`);

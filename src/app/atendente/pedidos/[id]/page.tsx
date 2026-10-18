@@ -157,6 +157,9 @@ export default async function PedidoDetalhePage({
           <InfoCard label="Endereço" valor={p.endereco} className="sm:col-span-2 lg:col-span-2" />
           <InfoCard label="Referência" valor={p.referencia ?? "Sem referência"} />
           {p.cep && <InfoCard label="CEP" valor={p.cep} />}
+          {p.status === "agendado" && p.agendado_para && (
+            <InfoCard label="Agendado para" valor={formatarData(p.agendado_para)} tom="yellow" />
+          )}
           {p.observacoes && (
             <InfoCard
               label="Observações"

@@ -100,12 +100,34 @@ export async function editarPedido(
 
   const [{ data: perfil }, { data: pedidoAtual }] = await Promise.all([
     supabase.from("perfis").select("papel").eq("id", user.id).single(),
-    supabase.from("pedidos").select("criado_por").eq("id", pedidoId).single(),
+    supabase.from("pedidos").select("criado_por, status").eq("id", pedidoId).single(),
   ]);
 
   const podeEditar = perfil?.papel === "admin" || pedidoAtual?.criado_por === user.id;
   if (!podeEditar) {
     return { erro: "Você não tem permissão pra editar este pedido." };
+  }
+
+  // Só mexe no agendamento se o pedido ainda não saiu da fase "aguardando
+  // saída" — não faz sentido (nem é seguro) reagendar algo que já está
+  // em rota, entregue, com problema ou cancelado.
+  const podeAgendar = pedidoAtual?.status === "pendente" || pedidoAtual?.status === "agendado";
+  let agendamento: { agendado_para: string | null; status: "pendente" | "agendado" } | null = null;
+
+  if (podeAgendar) {
+    const agendadoParaRaw = (formData.get("agendado_para") as string)?.trim();
+    if (agendadoParaRaw) {
+      const data = new Date(`${agendadoParaRaw}:00-03:00`);
+      if (Number.isNaN(data.getTime())) {
+        return { erro: "Data de agendamento inválida." };
+      }
+      if (data.getTime() <= Date.now()) {
+        return { erro: "A data do agendamento precisa ser no futuro." };
+      }
+      agendamento = { agendado_para: data.toISOString(), status: "agendado" };
+    } else {
+      agendamento = { agendado_para: null, status: "pendente" };
+    }
   }
 
   const clienteNome = (formData.get("cliente_nome") as string)?.trim();
@@ -148,6 +170,7 @@ export async function editarPedido(
       valor_total: valorTotal,
       precisa_receita: precisaReceita,
       observacoes: (formData.get("observacoes") as string)?.trim() || null,
+      ...(agendamento ?? {}),
     })
     .eq("id", pedidoId);
 

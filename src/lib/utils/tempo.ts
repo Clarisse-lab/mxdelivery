@@ -5,6 +5,14 @@ export function tempoDesde(dataIso: string): string {
   return formatDistanceToNow(new Date(dataIso), { locale: ptBR, addSuffix: true });
 }
 
+// Formata no horário local do navegador (não UTC) — é o que o
+// <input type="datetime-local"> espera, e como quem usa o app está na
+// farmácia, o horário local do aparelho já é o de Governador Valadares.
+export function paraDatetimeLocal(data: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${data.getFullYear()}-${pad(data.getMonth() + 1)}-${pad(data.getDate())}T${pad(data.getHours())}:${pad(data.getMinutes())}`;
+}
+
 export function formatarData(dataIso: string | null): string {
   if (!dataIso) return "—";
   // Fixa o horário de Brasília explicitamente — isso roda tanto no

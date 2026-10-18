@@ -5,6 +5,7 @@ import { tempoDesde } from "@/lib/utils/tempo";
 import { URGENCIA_UI, type NivelUrgencia } from "@/lib/utils/atraso";
 
 const UI: Record<Pedido["status"], { bar: string; badge: string }> = {
+  agendado: { bar: "bg-violet-500", badge: "bg-violet-50 text-violet-800" },
   pendente: { bar: "bg-brand-gold", badge: "bg-amber-50 text-amber-800" },
   em_rota: { bar: "bg-blue-500", badge: "bg-blue-50 text-brand-blue" },
   entregue: { bar: "bg-emerald-500", badge: "bg-emerald-50 text-emerald-700" },

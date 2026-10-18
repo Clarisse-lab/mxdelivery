@@ -1,6 +1,7 @@
 export type Papel = "admin" | "atendente" | "motoboy";
 
 export type StatusPedido =
+  | "agendado"
   | "pendente"
   | "em_rota"
   | "entregue"
@@ -57,6 +58,8 @@ export interface Pedido {
 
   observacoes: string | null;
   observacao_motoboy: string | null;
+
+  agendado_para: string | null;
 
   criado_em: string;
   atribuido_em: string | null;

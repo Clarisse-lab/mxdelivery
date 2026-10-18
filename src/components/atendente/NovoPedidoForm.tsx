@@ -16,6 +16,7 @@ import { TIPO_RECEITA_LABEL, formatarMoeda } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
 import { BAIRROS_GOVERNADOR_VALADARES } from "@/lib/data/bairrosGovernadorValadares";
 import { apenasDigitos, buscarEnderecoPorCep, formatarCep } from "@/lib/utils/cep";
+import { paraDatetimeLocal } from "@/lib/utils/tempo";
 
 const estadoInicial: EstadoFormPedido = {};
 
@@ -57,6 +58,9 @@ export default function NovoPedidoForm() {
   const [receitas, setReceitas] = useState<NovaReceita[]>([
     { tipo_receita: "comum", quantidade: 1 },
   ]);
+
+  const [agendarEntrega, setAgendarEntrega] = useState(false);
+  const [dataAgendamento, setDataAgendamento] = useState("");
 
   const [clienteNome, setClienteNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -301,6 +305,46 @@ export default function NovoPedidoForm() {
           />
         </Campo>
         </div>
+      </section>
+
+      <section className="premium-panel space-y-4 rounded-[26px] p-5 sm:p-6">
+        <SectionHeading
+          eyebrow="Quando entregar"
+          titulo="Agendamento"
+          descricao="Por padrão o pedido já entra na fila. Marque aqui se o cliente combinou um horário específico."
+        />
+        <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-sm font-bold text-brand-navy-dark">
+          <input
+            type="checkbox"
+            checked={agendarEntrega}
+            onChange={(e) => {
+              setAgendarEntrega(e.target.checked);
+              if (e.target.checked && !dataAgendamento) {
+                setDataAgendamento(paraDatetimeLocal(new Date(Date.now() + 30 * 60000)));
+              }
+            }}
+            className="h-5 w-5 accent-brand-navy"
+          />
+          Agendar entrega para mais tarde
+        </label>
+
+        {agendarEntrega && (
+          <Campo label="Data e hora da entrega" htmlFor="agendado_para">
+            <input
+              id="agendado_para"
+              name="agendado_para"
+              type="datetime-local"
+              required={agendarEntrega}
+              min={paraDatetimeLocal(new Date())}
+              value={dataAgendamento}
+              onChange={(e) => setDataAgendamento(e.target.value)}
+              className={inputClass}
+            />
+            <p className="text-xs font-semibold text-slate-400">
+              O pedido fica fora da fila e entra sozinho pros entregadores no horário marcado.
+            </p>
+          </Campo>
+        )}
       </section>
 
       <section className="premium-panel space-y-4 rounded-[26px] p-5 sm:p-6">

@@ -35,7 +35,7 @@ export default async function DashboardPage({
       .from("pedidos")
       .select("*")
       .neq("status", "cancelado")
-      .or(`criado_em.gte.${inicio.toISOString()},entregue_em.gte.${inicio.toISOString()},status.in.(pendente,em_rota,problema)`)
+      .or(`criado_em.gte.${inicio.toISOString()},entregue_em.gte.${inicio.toISOString()},status.in.(agendado,pendente,em_rota,problema)`)
       .order("criado_em", { ascending: false }),
     supabase
       .from("perfis")

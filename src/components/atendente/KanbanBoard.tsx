@@ -10,12 +10,14 @@ import { useAlertaAtraso } from "@/lib/hooks/useAlertaAtraso";
 const PESO_URGENCIA: Record<NivelUrgencia, number> = { atrasado: 3, quase: 2, atencao: 1, normal: 0 };
 
 const COLUNAS: { status: StatusPedido; titulo: string; detalhe: string }[] = [
+  { status: "agendado", titulo: "Agendados", detalhe: "Entram na fila na hora marcada" },
   { status: "pendente", titulo: "Pendentes", detalhe: "Aguardando saída" },
   { status: "em_rota", titulo: "Em rota", detalhe: "A caminho do cliente" },
   { status: "entregue", titulo: "Entregues", detalhe: "Concluídos hoje" },
 ];
 
 const STATUS_UI: Record<string, { dot: string; pill: string }> = {
+  agendado: { dot: "bg-violet-500", pill: "bg-violet-50 text-violet-800" },
   pendente: { dot: "bg-brand-gold", pill: "bg-brand-gold-soft text-brand-navy" },
   em_rota: { dot: "bg-blue-500", pill: "bg-blue-50 text-brand-blue" },
   entregue: { dot: "bg-emerald-500", pill: "bg-emerald-50 text-emerald-700" },
@@ -69,10 +71,17 @@ export default function KanbanBoard({
         }
         return true;
       })
-      .sort(
-        (a, b) =>
-          PESO_URGENCIA[calcularNivelUrgencia(b, agora)] - PESO_URGENCIA[calcularNivelUrgencia(a, agora)],
-      ),
+      .sort((a, b) => {
+        // Agendados não têm urgência (ainda nem entraram na fila) — faz
+        // mais sentido ordenar pelo horário marcado, do mais próximo
+        // pro mais distante.
+        if (coluna.status === "agendado") {
+          return new Date(a.agendado_para ?? 0).getTime() - new Date(b.agendado_para ?? 0).getTime();
+        }
+        return (
+          PESO_URGENCIA[calcularNivelUrgencia(b, agora)] - PESO_URGENCIA[calcularNivelUrgencia(a, agora)]
+        );
+      }),
   }));
 
   return (
@@ -171,7 +180,7 @@ export default function KanbanBoard({
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {colunas.map((coluna) => {
           const ui = STATUS_UI[coluna.status];
           return (

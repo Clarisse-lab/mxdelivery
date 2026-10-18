@@ -9,12 +9,14 @@ import {
   type CartaoTipo,
   type FormaPagamento,
   type NovaReceita,
+  type StatusPedido,
   type TipoReceita,
 } from "@/lib/types/database";
 import { TIPO_RECEITA_LABEL, formatarMoeda } from "@/lib/utils/status";
 import { calcularTroco } from "@/lib/utils/troco";
 import { BAIRROS_GOVERNADOR_VALADARES } from "@/lib/data/bairrosGovernadorValadares";
 import { apenasDigitos, buscarEnderecoPorCep, formatarCep } from "@/lib/utils/cep";
+import { paraDatetimeLocal } from "@/lib/utils/tempo";
 
 const estadoInicial: EstadoFormEditarPedido = {};
 
@@ -81,6 +83,8 @@ export default function EditarPedidoForm({
     referencia: string;
     observacoes: string;
     valor_total: string;
+    status: StatusPedido;
+    agendado_para: string;
   };
   receitasIniciais: NovaReceita[];
   pagamentosIniciais: PagamentoInicial[];
@@ -111,6 +115,10 @@ export default function EditarPedidoForm({
         }))
       : [linhaVazia()],
   );
+
+  const podeAgendar = valoresIniciais.status === "pendente" || valoresIniciais.status === "agendado";
+  const [agendarEntrega, setAgendarEntrega] = useState(valoresIniciais.status === "agendado");
+  const [dataAgendamento, setDataAgendamento] = useState(valoresIniciais.agendado_para);
 
   const [cep, setCep] = useState(valoresIniciais.cep);
   const [endereco, setEndereco] = useState(valoresIniciais.endereco);
@@ -284,6 +292,51 @@ export default function EditarPedidoForm({
           </Campo>
         </div>
       </section>
+
+      {podeAgendar && (
+        <section className="premium-panel space-y-4 rounded-[26px] p-5 sm:p-6">
+          <SectionHeading
+            eyebrow="Quando entregar"
+            titulo="Agendamento"
+            descricao="Mude o horário combinado ou libere o pedido pra fila agora mesmo."
+          />
+          <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-sm font-bold text-brand-navy-dark">
+            <input
+              type="checkbox"
+              checked={agendarEntrega}
+              onChange={(e) => {
+                setAgendarEntrega(e.target.checked);
+                if (e.target.checked && !dataAgendamento) {
+                  setDataAgendamento(paraDatetimeLocal(new Date(Date.now() + 30 * 60000)));
+                }
+              }}
+              className="h-5 w-5 accent-brand-navy"
+            />
+            Agendar entrega para mais tarde
+          </label>
+
+          {agendarEntrega && (
+            <Campo label="Data e hora da entrega" htmlFor="agendado_para">
+              <input
+                id="agendado_para"
+                name="agendado_para"
+                type="datetime-local"
+                required={agendarEntrega}
+                min={paraDatetimeLocal(new Date())}
+                value={dataAgendamento}
+                onChange={(e) => setDataAgendamento(e.target.value)}
+                className={inputClass}
+              />
+            </Campo>
+          )}
+
+          {!agendarEntrega && valoresIniciais.status === "agendado" && (
+            <p className="text-xs font-semibold text-emerald-700">
+              Ao salvar, o pedido entra na fila pros entregadores imediatamente.
+            </p>
+          )}
+        </section>
+      )}
 
       <section className="premium-panel space-y-4 rounded-[26px] p-5 sm:p-6">
         <SectionHeading
