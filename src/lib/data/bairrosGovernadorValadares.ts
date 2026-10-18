@@ -15,6 +15,7 @@ export const BAIRROS_GOVERNADOR_VALADARES = [
   "Caravelas",
   "Cardo",
   "Castanheiras",
+  "Centro",
   "Chácaras Braúnas",
   "Cidade Jardim",
   "Cidade Nova",
