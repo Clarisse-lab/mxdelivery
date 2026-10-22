@@ -78,6 +78,17 @@ export default function PedidoCard({
         </div>
       )}
 
+      {pedido.observacao_motoboy && (
+        <div className="mt-3 rounded-lg bg-blue-50 px-2.5 py-1.5">
+          <p className="text-[9px] font-black uppercase tracking-[0.1em] text-blue-600">
+            Observação do motoboy
+          </p>
+          <p className="line-clamp-2 text-[11px] font-semibold leading-4 text-blue-900">
+            {pedido.observacao_motoboy}
+          </p>
+        </div>
+      )}
+
       <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[10px]">
         <span className="font-semibold text-slate-400">{motoboy ? motoboy.nome : "Aguardando motoboy"}</span>
         <span className="font-bold text-brand-navy/55">

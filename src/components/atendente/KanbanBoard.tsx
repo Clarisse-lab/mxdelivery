@@ -6,6 +6,7 @@ import PedidoCard from "./PedidoCard";
 import { useAgora } from "@/lib/hooks/useAgora";
 import { calcularNivelUrgencia, estaAtrasado, type NivelUrgencia } from "@/lib/utils/atraso";
 import { useAlertaAtraso } from "@/lib/hooks/useAlertaAtraso";
+import { useAlertaObservacaoMotoboy } from "@/lib/hooks/useAlertaObservacaoMotoboy";
 
 const PESO_URGENCIA: Record<NivelUrgencia, number> = { atrasado: 3, quase: 2, atencao: 1, normal: 0 };
 
@@ -35,6 +36,7 @@ export default function KanbanBoard({
   const agora = useAgora();
 
   useAlertaAtraso(pedidos);
+  useAlertaObservacaoMotoboy(pedidos);
 
   const motoboysPorId = useMemo(
     () => new Map(motoboys.map((m) => [m.id, m])),
