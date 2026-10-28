@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Pedido } from "@/lib/types/database";
 import { STATUS_LABEL } from "@/lib/utils/status";
 import { tempoDesde } from "@/lib/utils/tempo";
-import { URGENCIA_UI, type NivelUrgencia } from "@/lib/utils/atraso";
+import { URGENCIA_UI, referenciaPrazo, type NivelUrgencia } from "@/lib/utils/atraso";
 
 const UI: Record<Pedido["status"], { bar: string; badge: string }> = {
   agendado: { bar: "bg-violet-500", badge: "bg-violet-50 text-violet-800" },
@@ -77,7 +77,7 @@ export default function EntregaCard({
         )}
 
         <div className="mt-3 flex items-center justify-between text-[11px]">
-          <span className="font-medium text-slate-400">{tempoDesde(pedido.criado_em)}</span>
+          <span className="font-medium text-slate-400">{tempoDesde(referenciaPrazo(pedido))}</span>
           <span className="font-extrabold text-brand-navy">Ver detalhes →</span>
         </div>
       </Link>

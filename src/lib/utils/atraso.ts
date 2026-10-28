@@ -11,15 +11,23 @@ export function minutosDesde(dataIso: string, agora: number = Date.now()): numbe
   return (agora - new Date(dataIso).getTime()) / 60000;
 }
 
+// Pedido agendado libera sozinho na hora marcada (migration 0020) — o
+// prazo de entrega conta a partir desse horário, não da criação, senão
+// um pedido agendado com 2 dias de antecedência já nasceria "atrasado"
+// assim que entrasse na fila.
+export function referenciaPrazo(pedido: Pick<Pedido, "criado_em" | "agendado_para">): string {
+  return pedido.agendado_para ?? pedido.criado_em;
+}
+
 // Vai subindo de nível conforme o pedido se aproxima do prazo — não é
 // só "atrasado ou não", dá pra ver o alerta chegando com antecedência.
 export function calcularNivelUrgencia(
-  pedido: Pick<Pedido, "status" | "criado_em">,
+  pedido: Pick<Pedido, "status" | "criado_em" | "agendado_para">,
   agora: number = Date.now(),
 ): NivelUrgencia {
   if (pedido.status !== "pendente" && pedido.status !== "em_rota") return "normal";
 
-  const minutos = minutosDesde(pedido.criado_em, agora);
+  const minutos = minutosDesde(referenciaPrazo(pedido), agora);
   if (minutos > PRAZO_ENTREGA_MINUTOS) return "atrasado";
   if (minutos > PRAZO_ENTREGA_MINUTOS * 0.75) return "quase";
   if (minutos > PRAZO_ENTREGA_MINUTOS * 0.5) return "atencao";
@@ -27,7 +35,7 @@ export function calcularNivelUrgencia(
 }
 
 export function estaAtrasado(
-  pedido: Pick<Pedido, "status" | "criado_em">,
+  pedido: Pick<Pedido, "status" | "criado_em" | "agendado_para">,
   agora: number = Date.now(),
 ): boolean {
   return calcularNivelUrgencia(pedido, agora) === "atrasado";

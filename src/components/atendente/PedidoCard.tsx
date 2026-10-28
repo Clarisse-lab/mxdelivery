@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { Pedido, Perfil } from "@/lib/types/database";
 import { tempoDesde, formatarData } from "@/lib/utils/tempo";
-import { URGENCIA_UI, type NivelUrgencia } from "@/lib/utils/atraso";
+import { URGENCIA_UI, referenciaPrazo, type NivelUrgencia } from "@/lib/utils/atraso";
 
 const STATUS: Record<Pedido["status"], { bar: string; badge: string; label: string }> = {
   agendado: { bar: "bg-violet-500", badge: "bg-violet-50 text-violet-800", label: "Agendado" },
@@ -94,7 +94,7 @@ export default function PedidoCard({
         <span className="font-bold text-brand-navy/55">
           {pedido.status === "agendado" && pedido.agendado_para
             ? `Agendado p/ ${formatarData(pedido.agendado_para)}`
-            : tempoDesde(pedido.criado_em)}
+            : tempoDesde(referenciaPrazo(pedido))}
         </span>
       </div>
     </Link>
