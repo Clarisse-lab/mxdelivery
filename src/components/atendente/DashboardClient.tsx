@@ -72,7 +72,7 @@ export default function DashboardClient({
         porAtendente={porAtendente}
       />
 
-      <ExportarRelatorio hoje={hoje} />
+      <ExportarRelatorio hoje={hoje} papel={papel} />
 
       <KanbanBoard pedidos={pedidos} motoboys={motoboys} />
 

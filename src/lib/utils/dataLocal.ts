@@ -25,6 +25,52 @@ export function formatarDataLocal(dataISO: string): string {
   return `${dia}/${mes}/${ano}`;
 }
 
+// "YYYY-MM" -> início (dia 1, 00h) e fim (último dia, 23h59) do mês,
+// já em horário de Brasília — mesma ideia de limitesDoDia, só que pro
+// relatório mensal.
+function ultimoDiaDoMes(mesISO: string): number {
+  const [ano, mes] = mesISO.split("-").map(Number);
+  return new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+}
+
+export function limitesDoMes(mesISO: string): { inicio: Date; fim: Date } {
+  const inicio = new Date(`${mesISO}-01T00:00:00${OFFSET_BRASILIA}`);
+  const fim = new Date(
+    `${mesISO}-${String(ultimoDiaDoMes(mesISO)).padStart(2, "0")}T23:59:59.999${OFFSET_BRASILIA}`,
+  );
+  return { inicio, fim };
+}
+
+// Todo dia do mês em "YYYY-MM-DD", do dia 1 até o último — usado pra
+// montar a aba "Por dia" do relatório mensal já com os dias sem pedido
+// aparecendo (zerados), não só os dias com movimento.
+export function diasDoMes(mesISO: string): string[] {
+  const total = ultimoDiaDoMes(mesISO);
+  return Array.from({ length: total }, (_, i) => `${mesISO}-${String(i + 1).padStart(2, "0")}`);
+}
+
+const NOMES_MES = [
+  "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+  "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+];
+
+export function formatarMesLocal(mesISO: string): string {
+  const [ano, mes] = mesISO.split("-");
+  return `${NOMES_MES[Number(mes) - 1]} de ${ano}`;
+}
+
+// Converte um timestamp (UTC, como vem do banco) pra "YYYY-MM-DD" no
+// horário de Brasília — usado pra agrupar pedidos por dia no relatório
+// mensal sem depender do fuso do servidor.
+export function dataLocalISO(dataIso: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(dataIso));
+}
+
 // Converte um timestamp (UTC, como vem do banco) pro formato que o
 // <input type="datetime-local"> espera, já no horário de Brasília —
 // usado pra pré-preencher o campo de agendamento ao editar um pedido.
