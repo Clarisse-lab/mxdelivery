@@ -364,11 +364,22 @@ function montarAbaResumo(
       abaResumo.addRow(["Tempo médio de entrega", formatarMinutos(m.tempoMedioMinutos)]);
       abaResumo.addRow(["Dias ativos", m.diasAtivos]);
       abaResumo.addRow(["Dias inativos", m.diasInativos.length]);
-      abaResumo.addRow(["Dias sem entrega", m.diasInativos.join(", ") || "—"]);
-      abaResumo.addRow([
-        "Bairros atendidos",
-        m.bairros.map((b) => `${b.bairro} (${b.quantidade})`).join(", ") || "—",
-      ]);
+
+      if (m.diasInativos.length > 0) {
+        abaResumo.addRow(["Datas sem entrega"]).font = { italic: true };
+        for (const dia of m.diasInativos) {
+          abaResumo.addRow([dia]);
+        }
+      }
+
+      abaResumo.addRow(["Bairros atendidos", "Quantidade"]).font = { italic: true };
+      if (m.bairros.length > 0) {
+        for (const b of m.bairros) {
+          abaResumo.addRow([b.bairro, b.quantidade]);
+        }
+      } else {
+        abaResumo.addRow(["—", ""]);
+      }
     }
   }
 
