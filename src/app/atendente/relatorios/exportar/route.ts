@@ -90,13 +90,33 @@ async function exportarMes(mesISO: string, papel: string, perfilId: string) {
   montarAbaPorDia(workbook, mesISO, listaPedidos, relacionados.pagamentosPorPedido);
 
   const resumo = calcularResumoDoPeriodo(listaPedidos, relacionados.pagamentosPorPedido);
-  const vendasPorAtendente =
-    papel === "admin"
-      ? calcularVendasPorAtendente(listaPedidos, relacionados.perfilPorId)
-      : undefined;
-  montarAbaResumo(workbook, "Resumo do mês", formatarMesLocal(mesISO), resumo, vendasPorAtendente);
+  let vendasPorAtendente;
+  let desempenhoMotoboys;
+  if (papel === "admin") {
+    vendasPorAtendente = calcularVendasPorAtendente(listaPedidos, relacionados.perfilPorId);
+
+    const motoboys = await buscarMotoboys();
+    // Só considera dias que já passaram — senão, num mês em andamento,
+    // os dias futuros contariam como "inativo" sem nunca terem existido.
+    const diasConsiderados = diasDoMes(mesISO).filter((dia) => dia <= hojeLocalISO());
+    desempenhoMotoboys = calcularDesempenhoMotoboys(motoboys, listaPedidos, diasConsiderados);
+  }
+  montarAbaResumo(
+    workbook,
+    "Resumo do mês",
+    formatarMesLocal(mesISO),
+    resumo,
+    vendasPorAtendente,
+    desempenhoMotoboys,
+  );
 
   return gerarResposta(workbook, `relatorio-entregas-${mesISO}.xlsx`);
+}
+
+async function buscarMotoboys(): Promise<Perfil[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("perfis").select("*").eq("papel", "motoboy").order("nome");
+  return (data as Perfil[]) ?? [];
 }
 
 async function buscarPedidosEDados(inicio: Date, fim: Date, papel: string, perfilId: string) {
@@ -292,6 +312,7 @@ function montarAbaResumo(
   subtitulo: string,
   resumo: ReturnType<typeof calcularResumoDoPeriodo>,
   vendasPorAtendente?: { nome: string; total: number }[],
+  desempenhoMotoboys?: DesempenhoMotoboy[],
 ) {
   const abaResumo = workbook.addWorksheet("Resumo");
   abaResumo.addRow([titulo, subtitulo]).font = { bold: true };
@@ -333,6 +354,24 @@ function montarAbaResumo(
     }
   }
 
+  if (desempenhoMotoboys && desempenhoMotoboys.length > 0) {
+    abaResumo.addRow([]);
+    abaResumo.addRow(["Desempenho dos motoboys"]).font = { bold: true };
+    for (const m of desempenhoMotoboys) {
+      abaResumo.addRow([]);
+      abaResumo.addRow([m.nome]).font = { bold: true };
+      abaResumo.addRow(["Entregas", m.entregas]);
+      abaResumo.addRow(["Tempo médio de entrega", formatarMinutos(m.tempoMedioMinutos)]);
+      abaResumo.addRow(["Dias ativos", m.diasAtivos]);
+      abaResumo.addRow(["Dias inativos", m.diasInativos.length]);
+      abaResumo.addRow(["Dias sem entrega", m.diasInativos.join(", ") || "—"]);
+      abaResumo.addRow([
+        "Bairros atendidos",
+        m.bairros.map((b) => `${b.bairro} (${b.quantidade})`).join(", ") || "—",
+      ]);
+    }
+  }
+
   abaResumo.getColumn(1).width = 40;
   abaResumo.getColumn(2).width = 20;
 }
@@ -346,6 +385,61 @@ function calcularVendasPorAtendente(listaPedidos: Pedido[], perfilPorId: Map<str
   return [...totalPorId.entries()]
     .map(([id, total]) => ({ nome: perfilPorId.get(id)?.nome ?? "Atendente removido", total }))
     .sort((a, b) => b.total - a.total);
+}
+
+type DesempenhoMotoboy = {
+  nome: string;
+  entregas: number;
+  tempoMedioMinutos: number | null;
+  bairros: { bairro: string; quantidade: number }[];
+  diasAtivos: number;
+  diasInativos: string[];
+};
+
+// "Ativo" num dia = entregou pelo menos 1 pedido naquele dia (dia de
+// entregue_em, no horário de Brasília). diasConsiderados já vem sem os
+// dias futuros de um mês ainda em andamento.
+function calcularDesempenhoMotoboys(
+  motoboys: Perfil[],
+  listaPedidos: Pedido[],
+  diasConsiderados: string[],
+): DesempenhoMotoboy[] {
+  return motoboys.map((motoboy) => {
+    const entregasDoMotoboy = listaPedidos.filter(
+      (p) => p.motoboy_id === motoboy.id && p.status === "entregue",
+    );
+
+    const tempos = entregasDoMotoboy
+      .filter((p): p is Pedido & { iniciado_em: string; entregue_em: string } =>
+        Boolean(p.iniciado_em && p.entregue_em),
+      )
+      .map((p) => (new Date(p.entregue_em).getTime() - new Date(p.iniciado_em).getTime()) / 60000);
+    const tempoMedioMinutos =
+      tempos.length > 0 ? Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length) : null;
+
+    const contagemBairros = new Map<string, number>();
+    for (const p of entregasDoMotoboy) {
+      if (!p.bairro) continue;
+      contagemBairros.set(p.bairro, (contagemBairros.get(p.bairro) ?? 0) + 1);
+    }
+    const bairros = [...contagemBairros.entries()]
+      .map(([bairro, quantidade]) => ({ bairro, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+
+    const diasComEntrega = new Set(
+      entregasDoMotoboy.filter((p) => p.entregue_em).map((p) => dataLocalISO(p.entregue_em!)),
+    );
+    const diasInativos = diasConsiderados.filter((dia) => !diasComEntrega.has(dia));
+
+    return {
+      nome: motoboy.nome,
+      entregas: entregasDoMotoboy.length,
+      tempoMedioMinutos,
+      bairros,
+      diasAtivos: diasConsiderados.length - diasInativos.length,
+      diasInativos: diasInativos.map(formatarDataLocal),
+    };
+  });
 }
 
 // Diferente de calcularResumo() (usado no painel em tempo real, que
