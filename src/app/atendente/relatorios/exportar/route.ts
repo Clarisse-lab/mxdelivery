@@ -329,9 +329,8 @@ function montarAbaResumo(
     abaResumo.addRow([]);
     abaResumo.addRow(["Vendas por atendente", "Valor"]).font = { bold: true };
     for (const v of vendasPorAtendente) {
-      abaResumo.addRow([v.nome, v.total]);
+      abaResumo.addRow([v.nome, formatarMoeda(v.total)]);
     }
-    abaResumo.getColumn(2).numFmt = "R$ #,##0.00";
   }
 
   abaResumo.getColumn(1).width = 40;
