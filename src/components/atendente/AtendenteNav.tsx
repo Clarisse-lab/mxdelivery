@@ -7,7 +7,7 @@ import LogoMaxiPopular from "@/components/LogoMaxiPopular";
 import { PAPEL_LABEL } from "@/lib/utils/status";
 import type { Papel } from "@/lib/types/database";
 
-type IconName = "dashboard" | "plus" | "users" | "bike";
+type IconName = "dashboard" | "plus" | "users" | "bike" | "shield";
 
 const linksBase: { href: string; label: string; icon: IconName }[] = [
   { href: "/atendente/dashboard", label: "Pedidos", icon: "dashboard" },
@@ -17,6 +17,7 @@ const linksBase: { href: string; label: string; icon: IconName }[] = [
 const linksAdmin: { href: string; label: string; icon: IconName }[] = [
   { href: "/atendente/atendentes", label: "Atendentes", icon: "users" },
   { href: "/atendente/motoboys", label: "Motoboys", icon: "bike" },
+  { href: "/atendente/admins", label: "Admins", icon: "shield" },
 ];
 
 function Icon({ name }: { name: IconName }) {
@@ -48,6 +49,9 @@ function Icon({ name }: { name: IconName }) {
         <circle cx="18" cy="17" r="3" />
         <path d="M6 17l4-7h4l4 7M10 10 8 6h4M14 10h4l2-3" />
       </>
+    ),
+    shield: (
+      <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
     ),
   };
 
